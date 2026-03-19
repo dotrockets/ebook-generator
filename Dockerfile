@@ -1,12 +1,15 @@
 FROM node:22-bookworm-slim AS base
 
-# Install system dependencies: pandoc + typst
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    pandoc \
     curl \
     ca-certificates \
     xz-utils \
     && rm -rf /var/lib/apt/lists/*
+
+# Install pandoc 3.6.4 (Debian ships 2.17 which is too old for --pdf-engine=typst)
+RUN curl -fsSL https://github.com/jgm/pandoc/releases/download/3.6.4/pandoc-3.6.4-linux-amd64.tar.gz \
+    | tar xz --strip-components=2 -C /usr/local/bin/ pandoc-3.6.4/bin/pandoc
 
 # Install typst (latest binary)
 RUN curl -fsSL https://github.com/typst/typst/releases/latest/download/typst-x86_64-unknown-linux-musl.tar.xz \
