@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pandoc \
     curl \
     ca-certificates \
+    xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Install typst (latest binary)
