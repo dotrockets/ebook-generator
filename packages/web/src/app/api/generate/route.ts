@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile, readFile, mkdir, rm } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { createRequire } from "node:module";
+import { existsSync } from "node:fs";
 import { convert, type OutputFormat, type ConvertOptions } from "@ebook-gen/core";
 
-const require = createRequire(import.meta.url);
+function findCorePath(): string {
+  // Try common locations for the core package fonts/templates
+  const candidates = [
+    join(process.cwd(), "packages", "core"),                    // standalone build
+    join(process.cwd(), "..", "core"),                           // from packages/web
+    join(process.cwd(), "node_modules", "@ebook-gen", "core"),  // node_modules
+  ];
+  for (const p of candidates) {
+    if (existsSync(join(p, "fonts"))) return p;
+  }
+  return candidates[0]; // fallback
+}
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
@@ -57,8 +68,8 @@ export async function POST(request: NextRequest) {
     const outputPath = join(workDir, `${slug}.${format}`);
 
     // Font path — resolve relative to the core package
-    const corePkgPath = require.resolve("@ebook-gen/core/package.json");
-    const fontPath = join(dirname(corePkgPath), "fonts");
+    const corePath = findCorePath();
+    const fontPath = join(corePath, "fonts");
 
     const options: ConvertOptions = {
       input: inputPath,
