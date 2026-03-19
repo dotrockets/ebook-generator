@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-ocean: #0a2c37;
+  --color-ocean-light: #0e4050;
+  --color-ocean-mid: #12576f;
+  --color-ocean-bright: #1a7a9e;
+  --color-sand: #f5ead6;
+  --color-sand-dark: #d4b87a;
+  --color-sunset: #e67300;
+  --color-sunset-light: #ff8c1a;
+  --color-coral: #ff6b6b;
+  --color-seafoam: #69db7c;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--color-ocean);
+  color: var(--color-sand);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-ocean);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-ocean-mid);
+  border-radius: 3px;
+}
+
+/* Markdown editor textarea */
+.markdown-editor {
+  field-sizing: content;
+  min-height: 400px;
+}
+
+/* Pulse animation for generating state */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(230, 115, 0, 0.4); }
+  50% { box-shadow: 0 0 20px 4px rgba(230, 115, 0, 0.2); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}

@@ -1,0 +1,32 @@
+{
+  "name": "ebook-gen",
+  "version": "0.1.0",
+  "description": "Generate beautiful ebooks from Markdown — PDF, EPUB, DOCX",
+  "type": "module",
+  "bin": {
+    "ebook-gen": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@ebook-gen/core": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0"
+  },
+  "keywords": [
+    "ebook",
+    "pdf",
+    "epub",
+    "markdown",
+    "typst",
+    "pandoc",
+    "book"
+  ]
+}

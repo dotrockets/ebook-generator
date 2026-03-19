@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+*.pdf
+*.epub
+*.docx
+.turbo
+.DS_Store
+examples
