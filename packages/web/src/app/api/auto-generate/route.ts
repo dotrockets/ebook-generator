@@ -341,7 +341,30 @@ lang: ${lang}
         fontPath,
       };
 
-      const result = await convert(options, format as OutputFormat);
+      let result;
+      try {
+        result = await convert(options, format as OutputFormat);
+      } catch (convertErr: unknown) {
+        const msg = convertErr instanceof Error ? convertErr.message : String(convertErr);
+        const stderr = convertErr && typeof convertErr === "object" && "stderr" in convertErr
+          ? (convertErr as { stderr: string }).stderr
+          : "";
+        console.error("[auto-generate] PDF conversion failed:", msg, stderr);
+        // Save markdown to library anyway so user can retry
+        const mdFilename = `${slug}.md`;
+        await saveFile(ebookId, mdFilename, Buffer.from(fullMarkdown, "utf-8"));
+        await updateEntry(ebookId, {
+          title: outline.title,
+          subtitle: outline.subtitle,
+          chapters: outline.chapters.map((c) => c.title),
+          wordCount: totalWords,
+          status: "error",
+          error: stderr || msg,
+          markdownFile: mdFilename,
+        });
+        await send("error", { error: `PDF-Konvertierung fehlgeschlagen: ${stderr || msg}` });
+        return;
+      }
 
       // Step 5: Save to library
       await send("status", { step: "saving", message: "Wird gespeichert..." });
@@ -379,7 +402,8 @@ lang: ${lang}
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      await updateEntry(ebookId, { status: "error", error: message });
+      console.error("[auto-generate] error:", message);
+      await updateEntry(ebookId, { status: "error", error: message }).catch(() => {});
       await send("error", { error: message });
     } finally {
       await rm(workDir, { recursive: true, force: true }).catch(() => {});
