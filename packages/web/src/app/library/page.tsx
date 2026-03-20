@@ -20,6 +20,49 @@ interface EbookEntry {
   createdAt: string;
 }
 
+function CoverThumbnail({ ebook }: { ebook: EbookEntry }) {
+  const hasCover = ebook.outputFiles.cover;
+
+  return (
+    <div className="w-28 shrink-0 aspect-[3/4] rounded-xl overflow-hidden relative group-hover:scale-[1.02] transition-transform duration-300">
+      {hasCover ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/api/library/download?id=${ebook.id}&format=cover`}
+            alt=""
+            className="w-full h-full object-cover absolute inset-0"
+          />
+          {/* Gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+        </>
+      ) : (
+        <div className="w-full h-full bg-gradient-to-br from-ocean-light to-ocean-mid" />
+      )}
+
+      {/* Text overlay */}
+      <div className="absolute inset-0 flex flex-col justify-end p-2.5">
+        <h3 className="text-white font-bold text-[10px] leading-tight line-clamp-3 drop-shadow-lg">
+          {ebook.title}
+        </h3>
+        {ebook.authors.length > 0 && (
+          <p className="text-white/60 text-[8px] mt-1 truncate">
+            {ebook.authors.join(", ")}
+          </p>
+        )}
+      </div>
+
+      {/* Status badge */}
+      {ebook.status === "generating" && (
+        <div className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-sunset animate-pulse" />
+      )}
+      {ebook.status === "error" && (
+        <div className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-coral" />
+      )}
+    </div>
+  );
+}
+
 export default function LibraryPage() {
   const [ebooks, setEbooks] = useState<EbookEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +92,6 @@ export default function LibraryPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header */}
       <header className="border-b border-ocean-light px-6 py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <Link href="/">
@@ -62,12 +104,20 @@ export default function LibraryPage() {
             {ebooks.length} Ebooks
           </span>
         </div>
-        <Link
-          href="/"
-          className="text-sm text-sand-dark hover:text-sand transition-colors"
-        >
-          + Neues Ebook
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/settings"
+            className="text-xs text-sand-dark hover:text-sand transition-colors"
+          >
+            Settings
+          </Link>
+          <Link
+            href="/"
+            className="text-xs bg-sunset text-white px-4 py-1.5 rounded-lg font-medium hover:bg-sunset-light transition-colors"
+          >
+            + Neues Ebook
+          </Link>
+        </div>
       </header>
 
       <main className="flex-1 p-6">
@@ -87,75 +137,73 @@ export default function LibraryPage() {
             </Link>
           </div>
         ) : (
-          <div className="max-w-4xl mx-auto space-y-3">
+          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
             {ebooks.map((ebook) => (
               <div
                 key={ebook.id}
-                className="bg-ocean-light/40 border border-ocean-mid/30 rounded-xl p-5 flex items-start gap-4 hover:border-ocean-mid/60 transition-colors"
+                className="group bg-ocean-light/30 border border-ocean-mid/20 rounded-2xl p-4 flex gap-4 hover:border-ocean-mid/50 transition-all"
               >
-                {/* Status indicator */}
-                <div className="shrink-0 pt-1">
-                  {ebook.status === "done" ? (
-                    <div className="w-3 h-3 rounded-full bg-seafoam" />
-                  ) : ebook.status === "generating" ? (
-                    <div className="w-3 h-3 rounded-full bg-sunset animate-pulse" />
-                  ) : (
-                    <div className="w-3 h-3 rounded-full bg-coral" />
-                  )}
-                </div>
+                {/* Cover */}
+                <CoverThumbnail ebook={ebook} />
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-sand font-semibold truncate">
+                {/* Info + Actions */}
+                <div className="flex-1 min-w-0 flex flex-col">
+                  <h2 className="text-sand font-semibold text-sm leading-snug line-clamp-2">
                     {ebook.title}
                   </h2>
                   {ebook.subtitle && (
-                    <p className="text-sand-dark text-sm truncate">
+                    <p className="text-sand-dark text-xs mt-0.5 truncate">
                       {ebook.subtitle}
                     </p>
                   )}
-                  <div className="flex items-center gap-3 mt-2 text-xs text-ocean-mid">
+
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[11px] text-ocean-mid">
                     <span>{ebook.chapters.length} Kapitel</span>
                     <span>{ebook.wordCount.toLocaleString("de")} Woerter</span>
-                    <span>{ebook.lang.toUpperCase()}</span>
-                    <span>{formatDate(ebook.createdAt)}</span>
+                    <span>{ebook.authors.join(", ")}</span>
                   </div>
+
+                  <div className="text-[10px] text-ocean-mid mt-1">
+                    {formatDate(ebook.createdAt)}
+                  </div>
+
                   {ebook.status === "error" && ebook.error && (
-                    <p className="text-coral text-xs mt-1 truncate">
+                    <p className="text-coral text-[10px] mt-1 line-clamp-2">
                       {ebook.error}
                     </p>
                   )}
-                </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 shrink-0">
-                  {ebook.status === "done" &&
-                    Object.keys(ebook.outputFiles).map((fmt) => (
+                  {/* Actions */}
+                  <div className="flex items-center gap-1.5 mt-auto pt-3">
+                    {ebook.status === "done" &&
+                      Object.keys(ebook.outputFiles)
+                        .filter((f) => f !== "cover")
+                        .map((fmt) => (
+                          <a
+                            key={fmt}
+                            href={`/api/library/download?id=${ebook.id}&format=${fmt}`}
+                            className="bg-ocean-light hover:bg-ocean-mid text-sand-dark hover:text-sand px-3 py-1.5 rounded-lg text-[11px] font-semibold uppercase transition-colors"
+                          >
+                            {fmt}
+                          </a>
+                        ))}
+                    {ebook.status === "done" && (
                       <a
-                        key={fmt}
-                        href={`/api/library/download?id=${ebook.id}&format=${fmt}`}
-                        className="bg-ocean-light hover:bg-ocean-mid text-sand-dark hover:text-sand px-3 py-1.5 rounded-lg text-xs font-medium uppercase transition-colors"
+                        href={`/api/library/download?id=${ebook.id}&format=md`}
+                        className="bg-ocean-light hover:bg-ocean-mid text-sand-dark hover:text-sand px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors"
                       >
-                        {fmt}
+                        MD
                       </a>
-                    ))}
-                  {/* Download Markdown */}
-                  {ebook.status === "done" && (
-                    <a
-                      href={`/api/library/download?id=${ebook.id}&format=md`}
-                      className="bg-ocean-light hover:bg-ocean-mid text-sand-dark hover:text-sand px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                      title="Markdown herunterladen"
+                    )}
+                    <div className="flex-1" />
+                    <button
+                      onClick={() => handleDelete(ebook.id)}
+                      className="text-ocean-mid hover:text-coral px-2 py-1.5 rounded-lg text-xs transition-colors"
+                      title="Loeschen"
                     >
-                      MD
-                    </a>
-                  )}
-                  <button
-                    onClick={() => handleDelete(ebook.id)}
-                    className="text-ocean-mid hover:text-coral px-2 py-1.5 rounded-lg text-xs transition-colors"
-                    title="Loeschen"
-                  >
-                    ✕
-                  </button>
+                      ✕
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -165,9 +213,9 @@ export default function LibraryPage() {
 
       <footer className="border-t border-ocean-light px-6 py-3 flex items-center justify-between text-xs text-ocean-mid shrink-0">
         <Link href="/" className="hover:text-sand transition-colors">
-          ← Generator
+          ← Startseite
         </Link>
-        <span>ebook-gen v0.2.0</span>
+        <span>ebook-gen v0.3.0</span>
       </footer>
     </div>
   );
