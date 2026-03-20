@@ -1,5 +1,5 @@
 import { execa } from "execa";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -151,6 +151,59 @@ export interface ConvertResult {
   duration: number;
 }
 
+/**
+ * Preprocess markdown to fix known Typst compatibility issues:
+ * - `---` horizontal rules → Pandoc generates `#horizontalrule` which Typst doesn't know
+ * - `$` dollar signs → math delimiter in Typst, needs escaping
+ * - `☐` / `☑` checkbox chars → render badly in PDF
+ */
+function preprocessMarkdown(inputPath: string, format: OutputFormat): string {
+  if (format !== "pdf") return inputPath;
+
+  let content = readFileSync(inputPath, "utf-8");
+
+  // Remove horizontal rules (--- or ***) that aren't frontmatter delimiters
+  // Keep the first --- and the closing --- of frontmatter
+  const lines = content.split("\n");
+  let inFrontmatter = false;
+  let frontmatterClosed = false;
+  const processed: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (i === 0 && line === "---") {
+      inFrontmatter = true;
+      processed.push(lines[i]);
+      continue;
+    }
+    if (inFrontmatter && line === "---") {
+      inFrontmatter = false;
+      frontmatterClosed = true;
+      processed.push(lines[i]);
+      continue;
+    }
+    if (frontmatterClosed && /^(-{3,}|\*{3,}|_{3,})$/.test(line)) {
+      // Replace horizontal rule with empty line
+      processed.push("");
+      continue;
+    }
+    processed.push(lines[i]);
+  }
+
+  content = processed.join("\n");
+
+  // Escape standalone $ signs (not already escaped, not in math blocks)
+  content = content.replace(/(?<!\\)\$(?!\$)/g, "\\$");
+
+  // Remove checkbox characters
+  content = content.replace(/[☐☑☒]/g, "");
+
+  // Write preprocessed file
+  const preprocessedPath = inputPath.replace(/\.md$/, ".preprocessed.md");
+  writeFileSync(preprocessedPath, content, "utf-8");
+  return preprocessedPath;
+}
+
 export async function convert(
   options: ConvertOptions,
   format: OutputFormat
@@ -159,12 +212,16 @@ export async function convert(
     throw new Error(`Input file not found: ${options.input}`);
   }
 
+  // Preprocess markdown for Typst compatibility
+  const processedInput = preprocessMarkdown(options.input, format);
+  const processedOptions = { ...options, input: processedInput };
+
   const start = performance.now();
-  const args = buildPandocArgs(options, format);
+  const args = buildPandocArgs(processedOptions, format);
 
   await execa("pandoc", args, {
     stdio: "pipe",
-    cwd: dirname(resolve(options.input)),
+    cwd: dirname(resolve(processedOptions.input)),
   });
 
   const duration = Math.round(performance.now() - start);

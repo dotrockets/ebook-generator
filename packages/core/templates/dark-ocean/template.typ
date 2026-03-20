@@ -14,7 +14,7 @@
 
 // === FONTS ===
 #let heading-font = "$if(heading-font)$$heading-font$$else$Playfair Display$endif$"
-#let body-font = "$if(body-font)$$body-font$$else$DM Sans$endif$"
+#let body-font = "$if(body-font)$$body-font$$else$DM Sans 9pt$endif$"
 
 // === DOCUMENT SETUP ===
 #set document(
