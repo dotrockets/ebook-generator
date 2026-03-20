@@ -201,7 +201,11 @@ function preprocessMarkdown(inputPath: string, format: OutputFormat): string {
   // Escape standalone $ signs (not already escaped, not in math blocks)
   content = content.replace(/(?<!\\)\$(?!\$)/g, "\\$");
 
-  // Remove checkbox characters
+  // Convert checkbox lists to normal lists
+  content = content.replace(/^(\s*)- \[x\] /gm, "$1- ✓ ");
+  content = content.replace(/^(\s*)- \[ \] /gm, "$1- ○ ");
+
+  // Remove checkbox characters that render badly
   content = content.replace(/[☐☑☒]/g, "");
 
   // Write preprocessed file

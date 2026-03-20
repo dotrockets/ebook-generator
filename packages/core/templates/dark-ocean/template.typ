@@ -92,7 +92,12 @@ $if(subtitle)$
 $endif$
     \
 $if(date)$
-    Version 1.0 — $date$$else$#datetime.today().display("[month repr:long] [year]")$endif$\
+    Version 1.0 — $date$$else$#{
+      let m = datetime.today().display("[month]")
+      let months = ("Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember")
+      let month-name = months.at(int(m) - 1)
+      [Version 1.0 — #month-name #datetime.today().display("[year]")]
+    }$endif$\
     \
 $if(copyright)$
     $copyright$\
@@ -205,6 +210,17 @@ $endif$
   spacing: 1em,
   body-indent: 0.5em,
 )
+
+// Terms / Definition lists (used by Pandoc for checklists)
+#show terms: it => {
+  block(spacing: 0.8em)[#it]
+}
+#show terms.item: it => {
+  block(spacing: 0.6em)[
+    #text(fill: accent, weight: "bold")[#it.term]
+    #if it.description != [] [ — #it.description]
+  ]
+}
 
 // Block quotes
 #show quote: it => {
