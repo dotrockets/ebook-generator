@@ -16,6 +16,7 @@ interface EbookEntry {
   format: string;
   status: "generating" | "done" | "error";
   error?: string;
+  markdownFile?: string;
   outputFiles: Record<string, string>;
   createdAt: string;
 }
@@ -63,9 +64,12 @@ function CoverThumbnail({ ebook }: { ebook: EbookEntry }) {
   );
 }
 
+const ALL_FORMATS = ["pdf", "epub", "docx"] as const;
+
 export default function LibraryPage() {
   const [ebooks, setEbooks] = useState<EbookEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetch("/api/library")
@@ -73,6 +77,40 @@ export default function LibraryPage() {
       .then(setEbooks)
       .finally(() => setLoading(false));
   }, []);
+
+  async function handleExport(id: string, format: string) {
+    const key = `${id}-${format}`;
+    setExporting((prev) => ({ ...prev, [key]: "loading" }));
+
+    try {
+      const res = await fetch("/api/library/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, format }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      // Refresh library to get updated outputFiles
+      const libRes = await fetch("/api/library");
+      const libData = await libRes.json();
+      setEbooks(libData);
+
+      // Download the new file
+      const a = document.createElement("a");
+      a.href = `/api/library/download?id=${id}&format=${format}`;
+      a.download = data.filename || `export.${format}`;
+      a.click();
+
+      setExporting((prev) => ({ ...prev, [key]: "done" }));
+      setTimeout(() => setExporting((prev) => { const n = { ...prev }; delete n[key]; return n; }), 2000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Export failed";
+      setExporting((prev) => ({ ...prev, [key]: `error:${msg}` }));
+      setTimeout(() => setExporting((prev) => { const n = { ...prev }; delete n[key]; return n; }), 4000);
+    }
+  }
 
   async function handleDelete(id: string) {
     if (!confirm("Ebook wirklich loeschen?")) return;
@@ -174,23 +212,62 @@ export default function LibraryPage() {
                   )}
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1.5 mt-auto pt-3">
+                  <div className="flex flex-wrap items-center gap-1.5 mt-auto pt-3">
                     {ebook.status === "done" &&
-                      Object.keys(ebook.outputFiles)
-                        .filter((f) => f !== "cover")
-                        .map((fmt) => (
-                          <a
+                      ALL_FORMATS.map((fmt) => {
+                        const key = `${ebook.id}-${fmt}`;
+                        const state = exporting[key];
+                        const hasFile = ebook.outputFiles[fmt];
+
+                        if (state === "loading") {
+                          return (
+                            <span
+                              key={fmt}
+                              className="bg-bg-3 text-text-3 px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase"
+                            >
+                              {fmt}...
+                            </span>
+                          );
+                        }
+
+                        if (state === "done") {
+                          return (
+                            <span
+                              key={fmt}
+                              className="bg-success-muted text-success px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase"
+                            >
+                              {fmt} ✓
+                            </span>
+                          );
+                        }
+
+                        if (hasFile) {
+                          return (
+                            <a
+                              key={fmt}
+                              href={`/api/library/download?id=${ebook.id}&format=${fmt}`}
+                              className="bg-bg-3 hover:bg-bg-4 text-text-2 hover:text-text px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase transition-colors"
+                            >
+                              {fmt}
+                            </a>
+                          );
+                        }
+
+                        return (
+                          <button
                             key={fmt}
-                            href={`/api/library/download?id=${ebook.id}&format=${fmt}`}
-                            className="bg-bg-3 hover:bg-bg-4 text-text-2 hover:text-text px-3 py-1.5 rounded-lg text-[11px] font-semibold uppercase transition-colors"
+                            onClick={() => handleExport(ebook.id, fmt)}
+                            className="bg-bg-3 hover:bg-accent-muted text-text-3 hover:text-accent px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase transition-colors border border-dashed border-border hover:border-accent/30"
+                            title={`Als ${fmt.toUpperCase()} exportieren`}
                           >
-                            {fmt}
-                          </a>
-                        ))}
-                    {ebook.status === "done" && (
+                            + {fmt}
+                          </button>
+                        );
+                      })}
+                    {ebook.status === "done" && ebook.markdownFile && (
                       <a
                         href={`/api/library/download?id=${ebook.id}&format=md`}
-                        className="bg-bg-3 hover:bg-bg-4 text-text-2 hover:text-text px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors"
+                        className="bg-bg-3 hover:bg-bg-4 text-text-2 hover:text-text px-3 py-1.5 rounded-md text-[11px] font-medium transition-colors"
                       >
                         MD
                       </a>
@@ -198,7 +275,7 @@ export default function LibraryPage() {
                     <div className="flex-1" />
                     <button
                       onClick={() => handleDelete(ebook.id)}
-                      className="text-text-3 hover:text-coral px-2 py-1.5 rounded-lg text-xs transition-colors"
+                      className="text-text-3 hover:text-error px-2 py-1.5 rounded-md text-xs transition-colors"
                       title="Loeschen"
                     >
                       ✕
