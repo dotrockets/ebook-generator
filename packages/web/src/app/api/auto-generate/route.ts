@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import Anthropic from "@anthropic-ai/sdk";
+import Replicate from "replicate";
 import { convert, type OutputFormat, type ConvertOptions } from "@ebook-gen/core";
 import { addEntry, updateEntry, saveFile, type EbookEntry } from "../library/store";
 
@@ -29,6 +30,7 @@ interface ChapterOutline {
 interface BookOutline {
   title: string;
   subtitle: string;
+  coverImagePrompt: string;
   chapters: ChapterOutline[];
 }
 
@@ -46,6 +48,7 @@ Antworte NUR mit diesem JSON-Format, nichts anderes:
 {
   "title": "Buchtitel",
   "subtitle": "Untertitel",
+  "coverImagePrompt": "English description for AI image generation: describe a beautiful, atmospheric book cover background image (NO text, NO letters). Example: serene zen garden with morning mist and soft sunlight",
   "chapters": [
     {
       "title": "Kapiteltitel",
@@ -60,7 +63,8 @@ Anforderungen:
 - Jedes Kapitel hat 2-4 Abschnitte (sections)
 - Praxisorientiert, mit konkreten Tipps
 - Letztes Kapitel: Zusammenfassung + naechste Schritte
-- KEIN Vorwort/Einleitung als eigenes Kapitel`;
+- KEIN Vorwort/Einleitung als eigenes Kapitel
+- coverImagePrompt: Beschreibe ein stimmungsvolles Hintergrundbild fuer das Cover (auf Englisch, KEIN Text im Bild)`;
   }
 
   return `Create an outline for an ebook on the topic:
@@ -73,6 +77,7 @@ Respond ONLY with this JSON format, nothing else:
 {
   "title": "Book Title",
   "subtitle": "Subtitle",
+  "coverImagePrompt": "Description for AI image generation: a beautiful, atmospheric book cover background image (NO text, NO letters)",
   "chapters": [
     {
       "title": "Chapter Title",
@@ -86,6 +91,7 @@ Requirements:
 - Title should be catchy and professional
 - Each chapter has 2-4 sections
 - Practical, with concrete tips
+- coverImagePrompt: describe a mood-setting background image for the cover (in English, NO text in image)
 - Last chapter: Summary + next steps
 - NO foreword/introduction as a standalone chapter`;
 }
@@ -251,9 +257,53 @@ export async function POST(request: NextRequest) {
         title: outline.title,
         subtitle: outline.subtitle,
         chapters: outline.chapters.map((c) => c.title),
+        coverImagePrompt: outline.coverImagePrompt,
       });
 
-      // Step 2: Generate each chapter
+      // Step 2a: Start cover generation in parallel (don't await yet)
+      let coverPromise: Promise<Buffer | null> = Promise.resolve(null);
+      const replicateToken = process.env.REPLICATE_API_TOKEN;
+      if (replicateToken && outline.coverImagePrompt) {
+        await send("status", { step: "cover_start", message: "Cover wird generiert..." });
+        const replicate = new Replicate({ auth: replicateToken });
+        coverPromise = (async () => {
+          try {
+            const coverPrompt = `Professional book cover background, ${outline.coverImagePrompt}, high quality, no text, no letters, no words, clean composition, cinematic lighting, suitable as ebook cover background`;
+            console.log("[auto-generate] generating cover...");
+            const output = await replicate.run("black-forest-labs/flux-schnell", {
+              input: {
+                prompt: coverPrompt,
+                num_outputs: 1,
+                aspect_ratio: "9:16",
+                output_format: "webp",
+                output_quality: 90,
+              },
+            });
+            const results = output as Array<unknown>;
+            if (!results?.length) return null;
+            const img = results[0];
+            if (img instanceof ReadableStream) {
+              const reader = img.getReader();
+              const chunks: Uint8Array[] = [];
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+              }
+              return Buffer.concat(chunks);
+            } else if (typeof img === "string") {
+              const res = await fetch(img);
+              return Buffer.from(await res.arrayBuffer());
+            }
+            return null;
+          } catch (e) {
+            console.error("[auto-generate] cover generation failed:", e);
+            return null;
+          }
+        })();
+      }
+
+      // Step 2b: Generate each chapter
       const wordsPerChapter = Math.round((pages * 450) / outline.chapters.length);
       const chapterTexts: string[] = [];
       const previousTitles: string[] = [];
@@ -312,8 +362,17 @@ lang: ${lang}
       const fullMarkdown = [frontmatter, "", ...chapterTexts].join("\n\n");
       const totalWords = fullMarkdown.split(/\s+/).length;
 
-      // Step 4: Convert to ebook
-      await send("status", { step: "convert", message: `${format.toUpperCase()} wird generiert...` });
+      // Step 4: Wait for cover and convert to ebook
+      await send("status", { step: "convert", message: "Cover + PDF werden generiert..." });
+
+      const coverBuffer = await coverPromise;
+      let coverImagePath: string | undefined;
+      if (coverBuffer) {
+        coverImagePath = join(workDir, "cover.webp");
+        await writeFile(coverImagePath, coverBuffer);
+        await send("status", { step: "cover_done", message: "Cover fertig! PDF wird erstellt..." });
+        console.log(`[auto-generate] cover: ${coverBuffer.length} bytes`);
+      }
 
       const inputPath = join(workDir, "content.md");
       await writeFile(inputPath, fullMarkdown, "utf-8");
@@ -330,6 +389,7 @@ lang: ${lang}
         input: inputPath,
         output: outputPath,
         title: outline.title,
+        coverImage: coverImagePath,
         subtitle: outline.subtitle || undefined,
         authors: ["AI Generated"],
         lang,
@@ -375,6 +435,9 @@ lang: ${lang}
 
       await saveFile(ebookId, mdFilename, Buffer.from(fullMarkdown, "utf-8"));
       await saveFile(ebookId, outFilename, outputBuffer);
+      if (coverBuffer) {
+        await saveFile(ebookId, "cover.webp", coverBuffer);
+      }
 
       await updateEntry(ebookId, {
         title: outline.title,
@@ -383,7 +446,10 @@ lang: ${lang}
         wordCount: totalWords,
         status: "done",
         markdownFile: mdFilename,
-        outputFiles: { [format]: outFilename },
+        outputFiles: {
+          [format]: outFilename,
+          ...(coverBuffer ? { cover: "cover.webp" } : {}),
+        },
       });
 
       // Step 6: Send result
