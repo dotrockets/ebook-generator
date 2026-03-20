@@ -353,6 +353,7 @@ function CreatePageInner() {
                   disabled={autoGenerating}
                   className="w-full bg-ocean-light/80 border border-ocean-mid/50 rounded-lg px-3 py-2 text-sm text-sand focus:outline-none focus:border-sunset transition-colors"
                 >
+                  <option value={5}>~5 Seiten</option>
                   <option value={10}>~10 Seiten</option>
                   <option value={15}>~15 Seiten</option>
                   <option value={20}>~20 Seiten</option>
