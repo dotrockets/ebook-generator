@@ -1,6 +1,6 @@
 import { execa } from "execa";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { resolve, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -87,7 +87,13 @@ function buildPandocArgs(options: ConvertOptions, format: string): string[] {
     if (options.website) args.push(`--variable=website:${options.website}`);
     if (options.copyright) args.push(`--variable=copyright:${options.copyright}`);
     if (options.disclaimer) args.push(`--variable=disclaimer:${options.disclaimer}`);
-    if (options.coverImage) args.push(`--variable=cover-image:${resolve(options.coverImage)}`);
+    if (options.coverImage) {
+      // Typst resolves paths relative to the input file's directory
+      const inputDir = dirname(resolve(options.input));
+      const coverAbs = resolve(options.coverImage);
+      const coverRel = relative(inputDir, coverAbs);
+      args.push(`--variable=cover-image:${coverRel}`);
+    }
     if (options.date) args.push(`--variable=date:${options.date}`);
     if (options.paper) args.push(`--variable=paper:${options.paper}`);
     if (options.lang) args.push(`--variable=lang:${options.lang}`);
