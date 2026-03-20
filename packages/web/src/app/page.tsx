@@ -222,6 +222,12 @@ export default function HomePage() {
             Library
           </Link>
           <Link
+            href="/settings"
+            className="text-xs text-sand-dark hover:text-sand transition-colors"
+          >
+            Settings
+          </Link>
+          <Link
             href="/create"
             className="text-xs bg-sunset text-white px-4 py-1.5 rounded-lg font-medium hover:bg-sunset-light transition-colors"
           >

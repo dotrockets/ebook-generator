@@ -8,6 +8,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import Replicate from "replicate";
 import { convert, type OutputFormat, type ConvertOptions } from "@ebook-gen/core";
 import { addEntry, updateEntry, saveFile, type EbookEntry } from "../library/store";
+import { loadSettings } from "../settings/store";
 
 function findCorePath(): string {
   const candidates = [
@@ -212,6 +213,8 @@ export async function POST(request: NextRequest) {
     const workDir = join(tmpdir(), `ebook-gen-${randomUUID()}`);
     await mkdir(workDir, { recursive: true });
     const ebookId = randomUUID();
+    const settings = await loadSettings();
+    const authorName = settings.defaultAuthor || "AI Generated";
 
     // Create library entry
     const entry: EbookEntry = {
@@ -219,7 +222,7 @@ export async function POST(request: NextRequest) {
       title: topic,
       subtitle: "",
       topic,
-      authors: ["AI Generated"],
+      authors: [authorName],
       lang,
       chapters: [],
       wordCount: 0,
@@ -355,7 +358,7 @@ export async function POST(request: NextRequest) {
       const frontmatter = `---
 title: "${outline.title}"
 subtitle: "${outline.subtitle}"
-authors: [AI Generated]
+authors: [${authorName}]
 lang: ${lang}
 ---`;
 
@@ -391,7 +394,7 @@ lang: ${lang}
         title: outline.title,
         coverImage: coverImagePath,
         subtitle: outline.subtitle || undefined,
-        authors: ["AI Generated"],
+        authors: [authorName],
         lang,
         template,
         paper,
@@ -399,6 +402,18 @@ lang: ${lang}
         tocDepth: 2,
         backPage: true,
         fontPath,
+        publisher: settings.defaultPublisher || undefined,
+        website: settings.defaultWebsite || undefined,
+        theme: {
+          bgPrimary: settings.bgPrimary,
+          bgSecondary: settings.bgSecondary,
+          bgTertiary: settings.bgTertiary,
+          textPrimary: settings.textPrimary,
+          textSecondary: settings.textSecondary,
+          accent: settings.accent,
+          headingFont: settings.headingFont,
+          bodyFont: settings.bodyFont,
+        },
       };
 
       let result;
