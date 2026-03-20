@@ -166,7 +166,13 @@ export default function HomePage() {
   function loadSuggestions(cat: string) {
     setLoading(true);
     setError(null);
-    fetch(`/api/suggestions?lang=de&category=${cat}`)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000);
+
+    fetch(`/api/suggestions?lang=de&category=${cat}`, {
+      signal: controller.signal,
+      cache: "no-store",
+    })
       .then((r) => {
         if (!r.ok) throw new Error("Failed to load suggestions");
         return r.json();
@@ -175,8 +181,17 @@ export default function HomePage() {
         if (Array.isArray(data)) setSuggestions(data);
         else throw new Error(data.error || "Invalid response");
       })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
+      .catch((e) => {
+        if (e.name === "AbortError") {
+          setError("Timeout — bitte nochmal versuchen");
+        } else {
+          setError(e.message);
+        }
+      })
+      .finally(() => {
+        clearTimeout(timeout);
+        setLoading(false);
+      });
   }
 
   useEffect(() => {

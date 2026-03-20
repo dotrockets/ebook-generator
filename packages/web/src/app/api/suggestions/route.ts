@@ -104,7 +104,13 @@ Respond ONLY with this JSON array:
     const suggestions = JSON.parse(jsonStr);
 
     console.log(`[suggestions] ${suggestions.length} suggestions generated`);
-    return NextResponse.json(suggestions);
+    return new NextResponse(JSON.stringify(suggestions), {
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store",
+        "X-Accel-Buffering": "no",
+      },
+    });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unknown error";
     console.error("[suggestions] error:", msg);
