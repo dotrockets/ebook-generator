@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { writeFile, readFile, mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -19,64 +19,129 @@ function findCorePath(): string {
   return candidates[0];
 }
 
-function buildPrompt(topic: string, pages: number, lang: string): string {
-  const wordCount = pages * 450; // ~450 Woerter pro Seite bei 11pt
+interface ChapterOutline {
+  title: string;
+  sections: string[];
+  description: string;
+}
+
+interface BookOutline {
+  title: string;
+  subtitle: string;
+  chapters: ChapterOutline[];
+}
+
+function outlinePrompt(topic: string, pages: number, lang: string): string {
+  const numChapters = Math.max(5, Math.min(8, Math.round(pages / 3)));
 
   if (lang === "de") {
-    return `Du bist ein erfahrener Sachbuch-Autor. Schreibe ein komplettes Ebook zum Thema:
+    return `Erstelle eine Gliederung fuer ein Ebook zum Thema:
 
 "${topic}"
+
+Das Buch soll ca. ${pages} Seiten haben mit ${numChapters} Kapiteln.
+
+Antworte NUR mit diesem JSON-Format, nichts anderes:
+{
+  "title": "Buchtitel",
+  "subtitle": "Untertitel",
+  "chapters": [
+    {
+      "title": "Kapiteltitel",
+      "sections": ["Abschnitt 1", "Abschnitt 2", "Abschnitt 3"],
+      "description": "Kurze Beschreibung was in diesem Kapitel behandelt wird"
+    }
+  ]
+}
 
 Anforderungen:
-- Umfang: ca. ${wordCount} Woerter (ca. ${pages} Seiten)
-- Sprache: Deutsch, warmherzig, empathisch aber fachlich fundiert
-- Zielgruppe: Leser die praktische Hilfe suchen, keine akademische Abhandlung
-- Stil: Locker, direkt, mit konkreten Tipps und Beispielen. Du-Anrede.
-- Jedes Kapitel mit praktischen Aktionsschritten oder Checklisten
-
-Struktur (als Markdown):
-1. Beginne mit einem YAML-Frontmatter Block (---) mit title, subtitle, authors: [Autor], lang: de
-2. Dann 5-7 Kapitel als H1 (# Kapitel...)
-3. Jedes Kapitel hat 2-4 Unterabschnitte als H2 (## ...)
-4. Verwende **fett** fuer wichtige Begriffe, *kursiv* fuer Betonungen
-5. Verwende > Blockquotes fuer wichtige Erkenntnisse oder Zitate
-6. Verwende Aufzaehlungslisten (-) fuer Tipps und Checklisten
-7. Verwende nummerierte Listen (1.) fuer Schritt-fuer-Schritt Anleitungen
-8. Baue mindestens 2 Tabellen ein wo sinnvoll
-9. KEIN Vorwort/Einleitung als eigenes Kapitel — starte direkt mit dem ersten inhaltlichen Kapitel
-10. Letztes Kapitel: Zusammenfassung + naechste Schritte
-
-WICHTIG: Schreibe das KOMPLETTE Ebook. Nicht nur eine Gliederung. Jedes Kapitel muss vollstaendig ausformuliert sein mit ${Math.round(wordCount / 6)}-${Math.round(wordCount / 5)} Woertern pro Kapitel.
-
-Antworte NUR mit dem Markdown-Content, keine Erklaerungen drumherum.`;
+- Titel soll catchy und professionell sein
+- Jedes Kapitel hat 2-4 Abschnitte (sections)
+- Praxisorientiert, mit konkreten Tipps
+- Letztes Kapitel: Zusammenfassung + naechste Schritte
+- KEIN Vorwort/Einleitung als eigenes Kapitel`;
   }
 
-  return `You are an experienced non-fiction author. Write a complete ebook on the topic:
+  return `Create an outline for an ebook on the topic:
 
 "${topic}"
 
+The book should be ~${pages} pages with ${numChapters} chapters.
+
+Respond ONLY with this JSON format, nothing else:
+{
+  "title": "Book Title",
+  "subtitle": "Subtitle",
+  "chapters": [
+    {
+      "title": "Chapter Title",
+      "sections": ["Section 1", "Section 2", "Section 3"],
+      "description": "Brief description of what this chapter covers"
+    }
+  ]
+}
+
 Requirements:
-- Length: approximately ${wordCount} words (~${pages} pages)
-- Language: ${lang === "en" ? "English" : lang}, warm, empathetic but well-researched
-- Audience: readers seeking practical help, not an academic paper
-- Style: Casual, direct, with concrete tips and examples
-- Each chapter with practical action steps or checklists
+- Title should be catchy and professional
+- Each chapter has 2-4 sections
+- Practical, with concrete tips
+- Last chapter: Summary + next steps
+- NO foreword/introduction as a standalone chapter`;
+}
 
-Structure (as Markdown):
-1. Start with a YAML frontmatter block (---) with title, subtitle, authors: [Author], lang: ${lang}
-2. Then 5-7 chapters as H1 (# Chapter...)
-3. Each chapter has 2-4 subsections as H2 (## ...)
-4. Use **bold** for key terms, *italic* for emphasis
-5. Use > blockquotes for key insights or quotes
-6. Use bullet lists (-) for tips and checklists
-7. Use numbered lists (1.) for step-by-step instructions
-8. Include at least 2 tables where appropriate
-9. NO foreword/introduction as a separate chapter — start with the first content chapter
-10. Last chapter: Summary + next steps
+function chapterPrompt(
+  topic: string,
+  bookTitle: string,
+  chapter: ChapterOutline,
+  chapterNum: number,
+  totalChapters: number,
+  wordsPerChapter: number,
+  lang: string,
+  previousChapterTitles: string[]
+): string {
+  const context = previousChapterTitles.length > 0
+    ? `\nBisherige Kapitel: ${previousChapterTitles.join(", ")}`
+    : "";
 
-IMPORTANT: Write the COMPLETE ebook. Not just an outline. Each chapter must be fully written with ${Math.round(wordCount / 6)}-${Math.round(wordCount / 5)} words per chapter.
+  if (lang === "de") {
+    return `Du schreibst Kapitel ${chapterNum} von ${totalChapters} fuer das Ebook "${bookTitle}" zum Thema "${topic}".
+${context}
 
-Respond ONLY with the Markdown content, no explanations around it.`;
+Kapitel ${chapterNum}: "${chapter.title}"
+Abschnitte: ${chapter.sections.join(", ")}
+Beschreibung: ${chapter.description}
+
+Anforderungen:
+- Ca. ${wordsPerChapter} Woerter
+- Sprache: Deutsch, warmherzig, empathisch, fachlich fundiert
+- Stil: Locker, direkt, Du-Anrede, mit konkreten Tipps und Beispielen
+- Beginne mit # ${chapter.title} als H1
+- Verwende ## fuer Abschnitte
+- Verwende **fett**, *kursiv*, > Blockquotes, Listen, ggf. eine Tabelle
+- Ende mit praktischen Aktionsschritten oder einer Checkliste
+- KEINE Ueberleitung zum naechsten Kapitel am Ende
+
+Antworte NUR mit dem Markdown-Content dieses Kapitels.`;
+  }
+
+  return `You are writing Chapter ${chapterNum} of ${totalChapters} for the ebook "${bookTitle}" on "${topic}".
+${context}
+
+Chapter ${chapterNum}: "${chapter.title}"
+Sections: ${chapter.sections.join(", ")}
+Description: ${chapter.description}
+
+Requirements:
+- Approximately ${wordsPerChapter} words
+- Warm, empathetic, well-researched tone
+- Casual, direct style with concrete tips and examples
+- Start with # ${chapter.title} as H1
+- Use ## for sections
+- Use **bold**, *italic*, > blockquotes, lists, tables where appropriate
+- End with practical action steps or a checklist
+- NO transition to the next chapter at the end
+
+Respond ONLY with the Markdown content of this chapter.`;
 }
 
 export async function POST(request: NextRequest) {
@@ -98,114 +163,179 @@ export async function POST(request: NextRequest) {
   };
 
   if (!topic) {
-    return NextResponse.json({ error: "No topic provided" }, { status: 400 });
+    return new Response(JSON.stringify({ error: "No topic provided" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return NextResponse.json(
-      { error: "ANTHROPIC_API_KEY not configured" },
-      { status: 500 }
+    return new Response(
+      JSON.stringify({ error: "ANTHROPIC_API_KEY not configured" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 
-  const workDir = join(tmpdir(), `ebook-gen-${randomUUID()}`);
-  await mkdir(workDir, { recursive: true });
+  // SSE stream for progress updates
+  const encoder = new TextEncoder();
+  const stream = new TransformStream();
+  const writer = stream.writable.getWriter();
 
-  try {
-    // 1. Generate content with Claude
-    const anthropic = new Anthropic({ apiKey });
-    const prompt = buildPrompt(topic, pages, lang);
-
-    const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 16000,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const markdown =
-      message.content[0].type === "text" ? message.content[0].text : "";
-
-    if (!markdown) {
-      throw new Error("AI returned empty content");
-    }
-
-    // 2. Extract frontmatter for title/authors
-    const fmMatch = markdown.match(/^---\n([\s\S]*?)\n---/);
-    let title = topic;
-    let subtitle = "";
-    let authors = ["AI Generated"];
-
-    if (fmMatch) {
-      const fm = fmMatch[1];
-      const titleMatch = fm.match(/title:\s*["']?(.+?)["']?\s*$/m);
-      const subtitleMatch = fm.match(/subtitle:\s*["']?(.+?)["']?\s*$/m);
-      const authorsMatch = fm.match(/authors:\s*\[(.+?)\]/);
-      if (titleMatch) title = titleMatch[1];
-      if (subtitleMatch) subtitle = subtitleMatch[1];
-      if (authorsMatch)
-        authors = authorsMatch[1].split(",").map((a) => a.trim());
-    }
-
-    // 3. Write markdown to temp file
-    const inputPath = join(workDir, "content.md");
-    await writeFile(inputPath, markdown, "utf-8");
-
-    // 4. Convert to ebook
-    const slug = title
-      .replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, "")
-      .replace(/\s+/g, "-");
-    const outputPath = join(workDir, `${slug}.${format}`);
-
-    const corePath = findCorePath();
-    const fontPath = join(corePath, "fonts");
-
-    const options: ConvertOptions = {
-      input: inputPath,
-      output: outputPath,
-      title,
-      subtitle: subtitle || undefined,
-      authors,
-      lang,
-      template,
-      paper,
-      toc: true,
-      tocDepth: 2,
-      backPage: true,
-      fontPath,
-    };
-
-    const result = await convert(options, format as OutputFormat);
-
-    // 5. Read and return
-    const outputBuffer = await readFile(result.outputPath);
-
-    const contentTypes: Record<string, string> = {
-      pdf: "application/pdf",
-      epub: "application/epub+zip",
-      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    };
-
-    return new NextResponse(outputBuffer, {
-      headers: {
-        "Content-Type": contentTypes[format] || "application/octet-stream",
-        "Content-Disposition": `attachment; filename="${slug}.${format}"`,
-        "X-Generation-Time": `${result.duration}ms`,
-        "X-Title": title,
-        "X-Word-Count": `${markdown.split(/\s+/).length}`,
-      },
-    });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    const stderr =
-      err && typeof err === "object" && "stderr" in err
-        ? (err as { stderr: string }).stderr
-        : undefined;
-    return NextResponse.json(
-      { error: message, details: stderr },
-      { status: 500 }
+  const send = async (event: string, data: unknown) => {
+    await writer.write(
+      encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
     );
-  } finally {
-    await rm(workDir, { recursive: true, force: true }).catch(() => {});
-  }
+  };
+
+  // Run generation in background
+  (async () => {
+    const workDir = join(tmpdir(), `ebook-gen-${randomUUID()}`);
+    await mkdir(workDir, { recursive: true });
+
+    try {
+      const anthropic = new Anthropic({ apiKey });
+
+      // Step 1: Generate outline
+      await send("status", { step: "outline", message: "Gliederung wird erstellt..." });
+
+      const outlineMsg = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2000,
+        messages: [{ role: "user", content: outlinePrompt(topic, pages, lang) }],
+      });
+
+      const outlineText =
+        outlineMsg.content[0].type === "text" ? outlineMsg.content[0].text : "";
+
+      // Parse JSON from response (strip markdown fences if present)
+      const jsonStr = outlineText.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
+      const outline: BookOutline = JSON.parse(jsonStr);
+
+      await send("outline", {
+        title: outline.title,
+        subtitle: outline.subtitle,
+        chapters: outline.chapters.map((c) => c.title),
+      });
+
+      // Step 2: Generate each chapter
+      const wordsPerChapter = Math.round((pages * 450) / outline.chapters.length);
+      const chapterTexts: string[] = [];
+      const previousTitles: string[] = [];
+
+      for (let i = 0; i < outline.chapters.length; i++) {
+        const chapter = outline.chapters[i];
+        await send("status", {
+          step: "chapter",
+          current: i + 1,
+          total: outline.chapters.length,
+          message: `Kapitel ${i + 1}/${outline.chapters.length}: ${chapter.title}`,
+        });
+
+        const chapterMsg = await anthropic.messages.create({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 4000,
+          messages: [
+            {
+              role: "user",
+              content: chapterPrompt(
+                topic,
+                outline.title,
+                chapter,
+                i + 1,
+                outline.chapters.length,
+                wordsPerChapter,
+                lang,
+                previousTitles
+              ),
+            },
+          ],
+        });
+
+        const chapterText =
+          chapterMsg.content[0].type === "text" ? chapterMsg.content[0].text : "";
+        chapterTexts.push(chapterText);
+        previousTitles.push(chapter.title);
+
+        await send("chapter_done", {
+          current: i + 1,
+          total: outline.chapters.length,
+          words: chapterText.split(/\s+/).length,
+        });
+      }
+
+      // Step 3: Assemble markdown
+      await send("status", { step: "assemble", message: "Ebook wird zusammengefuegt..." });
+
+      const frontmatter = `---
+title: "${outline.title}"
+subtitle: "${outline.subtitle}"
+authors: [AI Generated]
+lang: ${lang}
+---`;
+
+      const fullMarkdown = [frontmatter, "", ...chapterTexts].join("\n\n");
+      const totalWords = fullMarkdown.split(/\s+/).length;
+
+      // Step 4: Convert to ebook
+      await send("status", { step: "convert", message: `${format.toUpperCase()} wird generiert...` });
+
+      const inputPath = join(workDir, "content.md");
+      await writeFile(inputPath, fullMarkdown, "utf-8");
+
+      const slug = outline.title
+        .replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, "")
+        .replace(/\s+/g, "-");
+      const outputPath = join(workDir, `${slug}.${format}`);
+
+      const corePath = findCorePath();
+      const fontPath = join(corePath, "fonts");
+
+      const options: ConvertOptions = {
+        input: inputPath,
+        output: outputPath,
+        title: outline.title,
+        subtitle: outline.subtitle || undefined,
+        authors: ["AI Generated"],
+        lang,
+        template,
+        paper,
+        toc: true,
+        tocDepth: 2,
+        backPage: true,
+        fontPath,
+      };
+
+      const result = await convert(options, format as OutputFormat);
+
+      // Step 5: Read file and send as base64
+      const outputBuffer = await readFile(result.outputPath);
+      const base64 = outputBuffer.toString("base64");
+
+      await send("done", {
+        title: outline.title,
+        subtitle: outline.subtitle,
+        words: totalWords,
+        chapters: outline.chapters.length,
+        conversionTime: result.duration,
+        filename: `${slug}.${format}`,
+        format,
+        file: base64,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      await send("error", { error: message });
+    } finally {
+      await rm(workDir, { recursive: true, force: true }).catch(() => {});
+      await writer.close();
+    }
+  })();
+
+  return new Response(stream.readable, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
 }

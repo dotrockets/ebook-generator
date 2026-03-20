@@ -81,10 +81,13 @@ export default function Home() {
   const [autoGenerating, setAutoGenerating] = useState(false);
   const [autoError, setAutoError] = useState<string | null>(null);
   const [autoStatus, setAutoStatus] = useState<string | null>(null);
+  const [autoChapters, setAutoChapters] = useState<string[]>([]);
+  const [autoProgress, setAutoProgress] = useState<{ current: number; total: number } | null>(null);
   const [autoResult, setAutoResult] = useState<{
     title: string;
-    words: string;
-    time: string;
+    words: number;
+    chapters: number;
+    conversionTime: number;
   } | null>(null);
 
   async function handleGenerate() {
@@ -139,7 +142,9 @@ export default function Home() {
     setAutoGenerating(true);
     setAutoError(null);
     setAutoResult(null);
-    setAutoStatus("AI schreibt dein Ebook...");
+    setAutoChapters([]);
+    setAutoProgress(null);
+    setAutoStatus("Gliederung wird erstellt...");
 
     try {
       const res = await fetch("/api/auto-generate", {
@@ -156,29 +161,77 @@ export default function Home() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Generation failed");
+        const text = await res.text();
+        try {
+          const data = JSON.parse(text);
+          throw new Error(data.error || "Generation failed");
+        } catch {
+          throw new Error(text || "Generation failed");
+        }
       }
 
-      setAutoStatus("Formatiert PDF...");
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("No stream");
 
-      const resTitle = res.headers.get("X-Title") || topic;
-      const words = res.headers.get("X-Word-Count") || "?";
-      const time = res.headers.get("X-Generation-Time") || "?";
+      const decoder = new TextDecoder();
+      let buffer = "";
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      const slug = resTitle
-        .replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, "")
-        .replace(/\s+/g, "-");
-      a.href = url;
-      a.download = `${slug}.${autoFormat}`;
-      a.click();
-      URL.revokeObjectURL(url);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      setAutoResult({ title: resTitle, words, time });
-      setAutoStatus(null);
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        let eventType = "";
+        for (const line of lines) {
+          if (line.startsWith("event: ")) {
+            eventType = line.slice(7);
+          } else if (line.startsWith("data: ") && eventType) {
+            try {
+              const data = JSON.parse(line.slice(6));
+
+              switch (eventType) {
+                case "status":
+                  setAutoStatus(data.message);
+                  break;
+                case "outline":
+                  setAutoChapters(data.chapters);
+                  break;
+                case "chapter_done":
+                  setAutoProgress({ current: data.current, total: data.total });
+                  break;
+                case "done": {
+                  // Download file from base64
+                  const bytes = Uint8Array.from(atob(data.file), (c) => c.charCodeAt(0));
+                  const blob = new Blob([bytes]);
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = data.filename;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  setAutoResult({
+                    title: data.title,
+                    words: data.words,
+                    chapters: data.chapters,
+                    conversionTime: data.conversionTime,
+                  });
+                  setAutoStatus(null);
+                  setAutoProgress(null);
+                  break;
+                }
+                case "error":
+                  throw new Error(data.error);
+              }
+            } catch (e) {
+              if (e instanceof Error && e.message !== "Unexpected end of JSON input") throw e;
+            }
+            eventType = "";
+          }
+        }
+      }
     } catch (err: unknown) {
       setAutoError(err instanceof Error ? err.message : "Unknown error");
       setAutoStatus(null);
@@ -350,52 +403,72 @@ export default function Home() {
                 {autoError}
               </div>
             )}
-            {autoStatus && (
-              <div className="p-4 rounded-xl bg-ocean-light border border-ocean-mid/50 text-sm text-sand-dark flex items-center gap-3">
-                <svg
-                  className="w-5 h-5 animate-spin text-sunset shrink-0"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    className="opacity-25"
-                  />
-                  <path
-                    d="M4 12a8 8 0 018-8"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                {autoStatus}
+            {(autoStatus || autoChapters.length > 0) && !autoResult && (
+              <div className="rounded-xl bg-ocean-light border border-ocean-mid/50 overflow-hidden">
+                {autoStatus && (
+                  <div className="p-4 text-sm text-sand-dark flex items-center gap-3">
+                    <svg
+                      className="w-5 h-5 animate-spin text-sunset shrink-0"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
+                      <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
+                    {autoStatus}
+                  </div>
+                )}
+                {autoProgress && (
+                  <div className="px-4 pb-2">
+                    <div className="w-full h-1.5 bg-ocean-mid/30 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-sunset rounded-full transition-all duration-500"
+                        style={{ width: `${(autoProgress.current / autoProgress.total) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+                {autoChapters.length > 0 && (
+                  <div className="px-4 pb-3 space-y-1">
+                    {autoChapters.map((ch, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs">
+                        {autoProgress && i < autoProgress.current ? (
+                          <svg className="w-3.5 h-3.5 text-seafoam shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : autoProgress && i === autoProgress.current ? (
+                          <svg className="w-3.5 h-3.5 animate-spin text-sunset shrink-0" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
+                            <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                          </svg>
+                        ) : (
+                          <div className="w-3.5 h-3.5 rounded-full border border-ocean-mid/50 shrink-0" />
+                        )}
+                        <span className={
+                          autoProgress && i < autoProgress.current
+                            ? "text-seafoam"
+                            : autoProgress && i === autoProgress.current
+                            ? "text-sand"
+                            : "text-ocean-mid"
+                        }>
+                          {ch}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {autoResult && (
               <div className="p-4 rounded-xl bg-seafoam/10 border border-seafoam/30 text-sm text-seafoam space-y-1">
                 <div className="flex items-center gap-2 font-semibold">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   Ebook generiert!
                 </div>
                 <div className="text-seafoam/70 text-xs">
-                  {autoResult.title} — {autoResult.words} Woerter — PDF in{" "}
-                  {autoResult.time}
+                  {autoResult.title} — {autoResult.chapters} Kapitel — {autoResult.words} Woerter — PDF in {autoResult.conversionTime}ms
                 </div>
               </div>
             )}
