@@ -163,13 +163,16 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState("all");
 
-  function loadSuggestions(cat: string) {
+  function loadSuggestions(cat: string, forceRefresh = false) {
     setLoading(true);
     setError(null);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 60000);
 
-    fetch(`/api/suggestions?lang=de&category=${cat}`, {
+    const params = new URLSearchParams({ lang: "de", category: cat });
+    if (forceRefresh) params.set("refresh", "1");
+
+    fetch(`/api/suggestions?${params}`, {
       signal: controller.signal,
       cache: "no-store",
     })
@@ -254,12 +257,12 @@ export default function HomePage() {
               </button>
             ))}
             <button
-              onClick={() => loadSuggestions(category)}
+              onClick={() => loadSuggestions(category, true)}
               disabled={loading}
               className="px-3 py-1.5 rounded-full text-xs font-medium bg-ocean-light/60 text-sand-dark hover:bg-ocean-light hover:text-sand transition-all ml-auto"
-              title="Neue Vorschlaege laden"
+              title="Neue Vorschlaege generieren"
             >
-              {loading ? "..." : "Neu laden"}
+              {loading ? "Laden..." : "Neue Ideen"}
             </button>
           </div>
 
