@@ -182,11 +182,23 @@ export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
   const stream = new TransformStream();
   const writer = stream.writable.getWriter();
+  let streamClosed = false;
 
   const send = async (event: string, data: unknown) => {
-    await writer.write(
-      encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
-    );
+    if (streamClosed) return;
+    try {
+      await writer.write(
+        encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
+      );
+    } catch {
+      streamClosed = true;
+    }
+  };
+
+  const closeStream = async () => {
+    if (streamClosed) return;
+    streamClosed = true;
+    try { await writer.close(); } catch { /* already closed */ }
   };
 
   // Run generation in background
@@ -371,7 +383,7 @@ lang: ${lang}
       await send("error", { error: message });
     } finally {
       await rm(workDir, { recursive: true, force: true }).catch(() => {});
-      await writer.close();
+      await closeStream();
     }
   })();
 
