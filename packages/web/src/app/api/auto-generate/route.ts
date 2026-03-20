@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import Anthropic from "@anthropic-ai/sdk";
 import { convert, type OutputFormat, type ConvertOptions } from "@ebook-gen/core";
+import { addEntry, updateEntry, saveFile, type EbookEntry } from "../library/store";
 
 function findCorePath(): string {
   const candidates = [
@@ -192,6 +193,28 @@ export async function POST(request: NextRequest) {
   (async () => {
     const workDir = join(tmpdir(), `ebook-gen-${randomUUID()}`);
     await mkdir(workDir, { recursive: true });
+    const ebookId = randomUUID();
+
+    // Create library entry
+    const entry: EbookEntry = {
+      id: ebookId,
+      title: topic,
+      subtitle: "",
+      topic,
+      authors: ["AI Generated"],
+      lang,
+      chapters: [],
+      wordCount: 0,
+      pages,
+      format,
+      template,
+      status: "generating",
+      outputFiles: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    await addEntry(entry);
+    await send("id", { id: ebookId });
 
     try {
       const anthropic = new Anthropic({ apiKey });
@@ -308,22 +331,43 @@ lang: ${lang}
 
       const result = await convert(options, format as OutputFormat);
 
-      // Step 5: Read file and send as base64
+      // Step 5: Save to library
+      await send("status", { step: "saving", message: "Wird gespeichert..." });
+
       const outputBuffer = await readFile(result.outputPath);
+      const mdFilename = `${slug}.md`;
+      const outFilename = `${slug}.${format}`;
+
+      await saveFile(ebookId, mdFilename, Buffer.from(fullMarkdown, "utf-8"));
+      await saveFile(ebookId, outFilename, outputBuffer);
+
+      await updateEntry(ebookId, {
+        title: outline.title,
+        subtitle: outline.subtitle,
+        chapters: outline.chapters.map((c) => c.title),
+        wordCount: totalWords,
+        status: "done",
+        markdownFile: mdFilename,
+        outputFiles: { [format]: outFilename },
+      });
+
+      // Step 6: Send result
       const base64 = outputBuffer.toString("base64");
 
       await send("done", {
+        id: ebookId,
         title: outline.title,
         subtitle: outline.subtitle,
         words: totalWords,
         chapters: outline.chapters.length,
         conversionTime: result.duration,
-        filename: `${slug}.${format}`,
+        filename: outFilename,
         format,
         file: base64,
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
+      await updateEntry(ebookId, { status: "error", error: message });
       await send("error", { error: message });
     } finally {
       await rm(workDir, { recursive: true, force: true }).catch(() => {});

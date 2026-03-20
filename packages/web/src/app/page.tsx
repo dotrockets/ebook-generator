@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Link from "next/link";
 
 const DEMO_MARKDOWN = `---
 title: Mein Ebook
@@ -277,7 +278,11 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Mode Toggle */}
+        {/* Nav */}
+        <div className="flex items-center gap-3">
+        <Link href="/library" className="text-xs text-sand-dark hover:text-sand transition-colors">
+          Library
+        </Link>
         <div className="flex items-center bg-ocean-light rounded-lg p-0.5">
           <button
             onClick={() => setMode("auto")}
@@ -299,6 +304,7 @@ export default function Home() {
           >
             Editor
           </button>
+        </div>
         </div>
       </header>
 
