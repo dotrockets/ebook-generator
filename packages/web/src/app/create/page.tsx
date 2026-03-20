@@ -218,15 +218,12 @@ function CreatePageInner() {
                   setAutoProgress({ current: data.current, total: data.total });
                   break;
                 case "done": {
-                  // Download file from base64
-                  const bytes = Uint8Array.from(atob(data.file), (c) => c.charCodeAt(0));
-                  const blob = new Blob([bytes]);
-                  const url = URL.createObjectURL(blob);
+                  // Download via library API (no base64 in SSE)
+                  const downloadUrl = `/api/library/download?id=${data.id}&format=${data.format}`;
                   const a = document.createElement("a");
-                  a.href = url;
+                  a.href = downloadUrl;
                   a.download = data.filename;
                   a.click();
-                  URL.revokeObjectURL(url);
                   setAutoResult({
                     title: data.title,
                     words: data.words,

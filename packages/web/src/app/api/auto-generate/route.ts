@@ -467,9 +467,7 @@ lang: ${lang}
         },
       });
 
-      // Step 6: Send result
-      const base64 = outputBuffer.toString("base64");
-
+      // Step 6: Send result (no file data — frontend downloads via library API)
       await send("done", {
         id: ebookId,
         title: outline.title,
@@ -479,7 +477,6 @@ lang: ${lang}
         conversionTime: result.duration,
         filename: outFilename,
         format,
-        file: base64,
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
