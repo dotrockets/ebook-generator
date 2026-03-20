@@ -80,15 +80,15 @@ function ColorInput({
         type="color"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-8 h-8 rounded-lg border border-ocean-mid/50 cursor-pointer bg-transparent"
+        className="w-8 h-8 rounded-lg border border-border cursor-pointer bg-transparent"
       />
       <div className="flex-1">
-        <div className="text-xs text-sand-dark">{label}</div>
+        <div className="text-xs text-text-2">{label}</div>
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-transparent text-sand text-xs font-mono focus:outline-none"
+          className="w-full bg-transparent text-text text-xs font-mono focus:outline-none"
         />
       </div>
     </div>
@@ -135,7 +135,7 @@ export default function SettingsPage() {
 
   if (!settings) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-sand-dark">
+      <div className="flex items-center justify-center min-h-screen text-text-2">
         Laden...
       </div>
     );
@@ -143,14 +143,14 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="border-b border-ocean-light px-6 py-4 flex items-center justify-between shrink-0">
+      <header className="border-b border-border px-6 py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <div className="w-8 h-8 rounded-lg bg-sunset flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-white font-bold text-sm">
               eb
             </div>
           </Link>
-          <h1 className="text-lg font-semibold text-sand">Einstellungen</h1>
+          <h1 className="text-lg font-semibold text-text">Einstellungen</h1>
         </div>
         <div className="flex items-center gap-3">
           {saved && (
@@ -159,7 +159,7 @@ export default function SettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="bg-sunset text-white px-5 py-1.5 rounded-lg text-sm font-medium hover:bg-sunset-light transition-colors disabled:opacity-50"
+            className="bg-accent text-white px-5 py-1.5 rounded-lg text-sm font-medium hover:bg-accent-light transition-colors disabled:opacity-50"
           >
             {saving ? "..." : "Speichern"}
           </button>
@@ -170,24 +170,24 @@ export default function SettingsPage() {
         <div className="max-w-2xl mx-auto space-y-8">
           {/* Author Section */}
           <section>
-            <h2 className="text-sand font-semibold mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded bg-ocean-light flex items-center justify-center text-xs">A</span>
+            <h2 className="text-text font-semibold mb-4 flex items-center gap-2">
+              <span className="w-6 h-6 rounded bg-bg-3 flex items-center justify-center text-xs">A</span>
               Autor & Publisher
             </h2>
-            <div className="space-y-4 bg-ocean-light/30 rounded-xl p-5 border border-ocean-mid/20">
+            <div className="space-y-4 bg-bg-2 rounded-xl p-5 border border-border">
               <div>
-                <label className="block text-xs text-sand-dark mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs text-text-2 mb-1.5 uppercase tracking-wider">
                   Standard-Autor
                 </label>
                 <input
                   type="text"
                   value={settings.defaultAuthor}
                   onChange={(e) => update("defaultAuthor", e.target.value)}
-                  className="w-full bg-ocean-light/80 border border-ocean-mid/50 rounded-lg px-3 py-2 text-sm text-sand focus:outline-none focus:border-sunset transition-colors"
+                  className="w-full bg-bg-3 border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-xs text-sand-dark mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs text-text-2 mb-1.5 uppercase tracking-wider">
                   Publisher
                 </label>
                 <input
@@ -195,11 +195,11 @@ export default function SettingsPage() {
                   value={settings.defaultPublisher}
                   onChange={(e) => update("defaultPublisher", e.target.value)}
                   placeholder="z.B. Dein Verlagsname"
-                  className="w-full bg-ocean-light/80 border border-ocean-mid/50 rounded-lg px-3 py-2 text-sm text-sand placeholder:text-ocean-mid focus:outline-none focus:border-sunset transition-colors"
+                  className="w-full bg-bg-3 border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-3 focus:outline-none focus:border-accent transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-xs text-sand-dark mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs text-text-2 mb-1.5 uppercase tracking-wider">
                   Website
                 </label>
                 <input
@@ -207,7 +207,7 @@ export default function SettingsPage() {
                   value={settings.defaultWebsite}
                   onChange={(e) => update("defaultWebsite", e.target.value)}
                   placeholder="z.B. bjoernpuls.com"
-                  className="w-full bg-ocean-light/80 border border-ocean-mid/50 rounded-lg px-3 py-2 text-sm text-sand placeholder:text-ocean-mid focus:outline-none focus:border-sunset transition-colors"
+                  className="w-full bg-bg-3 border border-border rounded-lg px-3 py-2 text-sm text-text placeholder:text-text-3 focus:outline-none focus:border-accent transition-colors"
                 />
               </div>
             </div>
@@ -215,14 +215,14 @@ export default function SettingsPage() {
 
           {/* Theme Section */}
           <section>
-            <h2 className="text-sand font-semibold mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded bg-ocean-light flex items-center justify-center text-xs">T</span>
+            <h2 className="text-text font-semibold mb-4 flex items-center gap-2">
+              <span className="w-6 h-6 rounded bg-bg-3 flex items-center justify-center text-xs">T</span>
               Theme
             </h2>
-            <div className="space-y-5 bg-ocean-light/30 rounded-xl p-5 border border-ocean-mid/20">
+            <div className="space-y-5 bg-bg-2 rounded-xl p-5 border border-border">
               {/* Presets */}
               <div>
-                <label className="block text-xs text-sand-dark mb-2 uppercase tracking-wider">
+                <label className="block text-xs text-text-2 mb-2 uppercase tracking-wider">
                   Preset
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -232,8 +232,8 @@ export default function SettingsPage() {
                       onClick={() => applyPreset(name)}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all border ${
                         settings.template === name
-                          ? "border-sunset text-sand bg-ocean-light"
-                          : "border-ocean-mid/30 text-sand-dark hover:border-ocean-mid"
+                          ? "border-accent text-text bg-bg-3"
+                          : "border-border text-text-2 hover:border-ocean-mid"
                       }`}
                     >
                       <div
@@ -284,7 +284,7 @@ export default function SettingsPage() {
 
               {/* Preview */}
               <div>
-                <label className="block text-xs text-sand-dark mb-2 uppercase tracking-wider">
+                <label className="block text-xs text-text-2 mb-2 uppercase tracking-wider">
                   Vorschau
                 </label>
                 <div
@@ -325,25 +325,25 @@ export default function SettingsPage() {
               {/* Fonts */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-sand-dark mb-1.5 uppercase tracking-wider">
+                  <label className="block text-xs text-text-2 mb-1.5 uppercase tracking-wider">
                     Heading Font
                   </label>
                   <input
                     type="text"
                     value={settings.headingFont}
                     onChange={(e) => update("headingFont", e.target.value)}
-                    className="w-full bg-ocean-light/80 border border-ocean-mid/50 rounded-lg px-3 py-2 text-sm text-sand focus:outline-none focus:border-sunset transition-colors"
+                    className="w-full bg-bg-3 border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-sand-dark mb-1.5 uppercase tracking-wider">
+                  <label className="block text-xs text-text-2 mb-1.5 uppercase tracking-wider">
                     Body Font
                   </label>
                   <input
                     type="text"
                     value={settings.bodyFont}
                     onChange={(e) => update("bodyFont", e.target.value)}
-                    className="w-full bg-ocean-light/80 border border-ocean-mid/50 rounded-lg px-3 py-2 text-sm text-sand focus:outline-none focus:border-sunset transition-colors"
+                    className="w-full bg-bg-3 border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>
               </div>
@@ -352,20 +352,20 @@ export default function SettingsPage() {
 
           {/* Defaults Section */}
           <section>
-            <h2 className="text-sand font-semibold mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded bg-ocean-light flex items-center justify-center text-xs">D</span>
+            <h2 className="text-text font-semibold mb-4 flex items-center gap-2">
+              <span className="w-6 h-6 rounded bg-bg-3 flex items-center justify-center text-xs">D</span>
               Standard-Werte
             </h2>
-            <div className="space-y-4 bg-ocean-light/30 rounded-xl p-5 border border-ocean-mid/20">
+            <div className="space-y-4 bg-bg-2 rounded-xl p-5 border border-border">
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-sand-dark mb-1.5 uppercase tracking-wider">
+                  <label className="block text-xs text-text-2 mb-1.5 uppercase tracking-wider">
                     Sprache
                   </label>
                   <select
                     value={settings.defaultLang}
                     onChange={(e) => update("defaultLang", e.target.value)}
-                    className="w-full bg-ocean-light/80 border border-ocean-mid/50 rounded-lg px-3 py-2 text-sm text-sand focus:outline-none focus:border-sunset transition-colors"
+                    className="w-full bg-bg-3 border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent transition-colors"
                   >
                     <option value="de">Deutsch</option>
                     <option value="en">English</option>
@@ -374,13 +374,13 @@ export default function SettingsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-sand-dark mb-1.5 uppercase tracking-wider">
+                  <label className="block text-xs text-text-2 mb-1.5 uppercase tracking-wider">
                     Papierformat
                   </label>
                   <select
                     value={settings.defaultPaper}
                     onChange={(e) => update("defaultPaper", e.target.value)}
-                    className="w-full bg-ocean-light/80 border border-ocean-mid/50 rounded-lg px-3 py-2 text-sm text-sand focus:outline-none focus:border-sunset transition-colors"
+                    className="w-full bg-bg-3 border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent transition-colors"
                   >
                     <option value="a4">A4</option>
                     <option value="a5">A5</option>
@@ -388,7 +388,7 @@ export default function SettingsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-sand-dark mb-1.5 uppercase tracking-wider">
+                  <label className="block text-xs text-text-2 mb-1.5 uppercase tracking-wider">
                     Seiten
                   </label>
                   <select
@@ -396,7 +396,7 @@ export default function SettingsPage() {
                     onChange={(e) =>
                       update("defaultPages", Number(e.target.value))
                     }
-                    className="w-full bg-ocean-light/80 border border-ocean-mid/50 rounded-lg px-3 py-2 text-sm text-sand focus:outline-none focus:border-sunset transition-colors"
+                    className="w-full bg-bg-3 border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent transition-colors"
                   >
                     <option value={5}>~5</option>
                     <option value={10}>~10</option>
@@ -409,13 +409,13 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-xs text-sand-dark mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs text-text-2 mb-1.5 uppercase tracking-wider">
                   Cover-Modell
                 </label>
                 <select
                   value={settings.coverModel}
                   onChange={(e) => update("coverModel", e.target.value)}
-                  className="w-full bg-ocean-light/80 border border-ocean-mid/50 rounded-lg px-3 py-2 text-sm text-sand focus:outline-none focus:border-sunset transition-colors"
+                  className="w-full bg-bg-3 border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent transition-colors"
                 >
                   <option value="black-forest-labs/flux-schnell">
                     Flux Schnell (schnell, guenstig)
@@ -430,8 +430,8 @@ export default function SettingsPage() {
         </div>
       </main>
 
-      <footer className="border-t border-ocean-light px-6 py-3 flex items-center justify-between text-xs text-ocean-mid shrink-0">
-        <Link href="/" className="hover:text-sand transition-colors">
+      <footer className="border-t border-border px-6 py-3 flex items-center justify-between text-xs text-text-3 shrink-0">
+        <Link href="/" className="hover:text-text transition-colors">
           ← Zurueck
         </Link>
         <span>ebook-gen v0.3.0</span>

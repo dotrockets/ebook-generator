@@ -1,35 +1,59 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-ocean: #0a2c37;
-  --color-ocean-light: #0e4050;
-  --color-ocean-mid: #12576f;
-  --color-ocean-bright: #1a7a9e;
-  --color-sand: #f5ead6;
-  --color-sand-dark: #d4b87a;
-  --color-sunset: #e67300;
-  --color-sunset-light: #ff8c1a;
-  --color-coral: #ff6b6b;
-  --color-seafoam: #69db7c;
+  /* Modern dark palette */
+  --color-bg: #09090b;
+  --color-bg-2: #111113;
+  --color-bg-3: #18181b;
+  --color-bg-4: #222225;
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-hover: rgba(255, 255, 255, 0.12);
+  --color-text: #f0f0f2;
+  --color-text-2: #a0a0ab;
+  --color-text-3: #63636e;
+  --color-accent: #8b5cf6;
+  --color-accent-hover: #a78bfa;
+  --color-accent-muted: rgba(139, 92, 246, 0.15);
+  --color-success: #22c55e;
+  --color-success-muted: rgba(34, 197, 94, 0.15);
+  --color-error: #ef4444;
+  --color-error-muted: rgba(239, 68, 68, 0.15);
+  --color-warning: #f59e0b;
+
+  /* Keep old names as aliases for gradual migration */
+  --color-ocean: #09090b;
+  --color-ocean-light: #18181b;
+  --color-ocean-mid: #63636e;
+  --color-ocean-bright: #8b5cf6;
+  --color-sand: #f0f0f2;
+  --color-sand-dark: #a0a0ab;
+  --color-sunset: #8b5cf6;
+  --color-sunset-light: #a78bfa;
+  --color-coral: #ef4444;
+  --color-seafoam: #22c55e;
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--color-ocean);
-  color: var(--color-sand);
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-ocean);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-ocean-mid);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Markdown editor textarea */
@@ -40,9 +64,20 @@ body {
 
 /* Pulse animation for generating state */
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(230, 115, 0, 0.4); }
-  50% { box-shadow: 0 0 20px 4px rgba(230, 115, 0, 0.2); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.3); }
+  50% { box-shadow: 0 0 24px 4px rgba(139, 92, 246, 0.15); }
 }
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Subtle grain texture */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }

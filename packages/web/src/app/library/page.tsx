@@ -37,7 +37,7 @@ function CoverThumbnail({ ebook }: { ebook: EbookEntry }) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
         </>
       ) : (
-        <div className="w-full h-full bg-gradient-to-br from-ocean-light to-ocean-mid" />
+        <div className="w-full h-full bg-gradient-to-br from-bg-3 to-bg-4" />
       )}
 
       {/* Text overlay */}
@@ -54,7 +54,7 @@ function CoverThumbnail({ ebook }: { ebook: EbookEntry }) {
 
       {/* Status badge */}
       {ebook.status === "generating" && (
-        <div className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-sunset animate-pulse" />
+        <div className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-accent animate-pulse" />
       )}
       {ebook.status === "error" && (
         <div className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-coral" />
@@ -92,28 +92,28 @@ export default function LibraryPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="border-b border-ocean-light px-6 py-4 flex items-center justify-between shrink-0">
+      <header className="border-b border-border px-6 py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <Link href="/">
-            <div className="w-8 h-8 rounded-lg bg-sunset flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-white font-bold text-sm">
               eb
             </div>
           </Link>
-          <h1 className="text-lg font-semibold text-sand">Library</h1>
-          <span className="text-xs text-sand-dark bg-ocean-light px-2 py-0.5 rounded-full">
+          <h1 className="text-lg font-semibold text-text">Library</h1>
+          <span className="text-xs text-text-2 bg-bg-3 px-2 py-0.5 rounded-full">
             {ebooks.length} Ebooks
           </span>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/settings"
-            className="text-xs text-sand-dark hover:text-sand transition-colors"
+            className="text-xs text-text-2 hover:text-text transition-colors"
           >
             Settings
           </Link>
           <Link
             href="/"
-            className="text-xs bg-sunset text-white px-4 py-1.5 rounded-lg font-medium hover:bg-sunset-light transition-colors"
+            className="text-xs bg-accent text-white px-4 py-1.5 rounded-lg font-medium hover:bg-accent-light transition-colors"
           >
             + Neues Ebook
           </Link>
@@ -122,16 +122,16 @@ export default function LibraryPage() {
 
       <main className="flex-1 p-6">
         {loading ? (
-          <div className="flex items-center justify-center h-64 text-sand-dark">
+          <div className="flex items-center justify-center h-64 text-text-2">
             Laden...
           </div>
         ) : ebooks.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 gap-4">
             <div className="text-4xl opacity-20">📚</div>
-            <p className="text-sand-dark">Noch keine Ebooks generiert</p>
+            <p className="text-text-2">Noch keine Ebooks generiert</p>
             <Link
               href="/"
-              className="bg-sunset text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-sunset-light transition-colors"
+              className="bg-accent text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-accent-light transition-colors"
             >
               Erstes Ebook erstellen
             </Link>
@@ -141,29 +141,29 @@ export default function LibraryPage() {
             {ebooks.map((ebook) => (
               <div
                 key={ebook.id}
-                className="group bg-ocean-light/30 border border-ocean-mid/20 rounded-2xl p-4 flex gap-4 hover:border-ocean-mid/50 transition-all"
+                className="group bg-bg-2 border border-border rounded-xl p-4 flex gap-4 hover:border-border-hover transition-all"
               >
                 {/* Cover */}
                 <CoverThumbnail ebook={ebook} />
 
                 {/* Info + Actions */}
                 <div className="flex-1 min-w-0 flex flex-col">
-                  <h2 className="text-sand font-semibold text-sm leading-snug line-clamp-2">
+                  <h2 className="text-text font-semibold text-sm leading-snug line-clamp-2">
                     {ebook.title}
                   </h2>
                   {ebook.subtitle && (
-                    <p className="text-sand-dark text-xs mt-0.5 truncate">
+                    <p className="text-text-2 text-xs mt-0.5 truncate">
                       {ebook.subtitle}
                     </p>
                   )}
 
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[11px] text-ocean-mid">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[11px] text-text-3">
                     <span>{ebook.chapters.length} Kapitel</span>
                     <span>{ebook.wordCount.toLocaleString("de")} Woerter</span>
                     <span>{ebook.authors.join(", ")}</span>
                   </div>
 
-                  <div className="text-[10px] text-ocean-mid mt-1">
+                  <div className="text-[10px] text-text-3 mt-1">
                     {formatDate(ebook.createdAt)}
                   </div>
 
@@ -182,7 +182,7 @@ export default function LibraryPage() {
                           <a
                             key={fmt}
                             href={`/api/library/download?id=${ebook.id}&format=${fmt}`}
-                            className="bg-ocean-light hover:bg-ocean-mid text-sand-dark hover:text-sand px-3 py-1.5 rounded-lg text-[11px] font-semibold uppercase transition-colors"
+                            className="bg-bg-3 hover:bg-bg-4 text-text-2 hover:text-text px-3 py-1.5 rounded-lg text-[11px] font-semibold uppercase transition-colors"
                           >
                             {fmt}
                           </a>
@@ -190,7 +190,7 @@ export default function LibraryPage() {
                     {ebook.status === "done" && (
                       <a
                         href={`/api/library/download?id=${ebook.id}&format=md`}
-                        className="bg-ocean-light hover:bg-ocean-mid text-sand-dark hover:text-sand px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors"
+                        className="bg-bg-3 hover:bg-bg-4 text-text-2 hover:text-text px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors"
                       >
                         MD
                       </a>
@@ -198,7 +198,7 @@ export default function LibraryPage() {
                     <div className="flex-1" />
                     <button
                       onClick={() => handleDelete(ebook.id)}
-                      className="text-ocean-mid hover:text-coral px-2 py-1.5 rounded-lg text-xs transition-colors"
+                      className="text-text-3 hover:text-coral px-2 py-1.5 rounded-lg text-xs transition-colors"
                       title="Loeschen"
                     >
                       ✕
@@ -211,8 +211,8 @@ export default function LibraryPage() {
         )}
       </main>
 
-      <footer className="border-t border-ocean-light px-6 py-3 flex items-center justify-between text-xs text-ocean-mid shrink-0">
-        <Link href="/" className="hover:text-sand transition-colors">
+      <footer className="border-t border-border px-6 py-3 flex items-center justify-between text-xs text-text-3 shrink-0">
+        <Link href="/" className="hover:text-text transition-colors">
           ← Startseite
         </Link>
         <span>ebook-gen v0.3.0</span>

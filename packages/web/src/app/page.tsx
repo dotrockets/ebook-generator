@@ -98,41 +98,39 @@ function SuggestionCard({ suggestion }: { suggestion: Suggestion }) {
       href={`/create?topic=${encodeURIComponent(suggestion.topic)}`}
       className="group block"
     >
-      <div className="bg-ocean-light/30 border border-ocean-mid/20 rounded-2xl overflow-hidden hover:border-sunset/40 hover:bg-ocean-light/50 transition-all duration-300">
-        {/* Cover Preview */}
+      <div className="bg-bg-2 border border-border rounded-xl overflow-hidden hover:border-border-hover hover:bg-bg-3 transition-all duration-200">
         <div className="p-3 pb-0">
           <CoverPreview cover={suggestion.cover} title={suggestion.title} />
         </div>
 
-        {/* Info */}
         <div className="p-4 space-y-2">
           <div className="flex items-center gap-2">
             <span
-              className="text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded-full"
+              className="text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded"
               style={{
-                background: `${suggestion.cover.accentColor}20`,
+                background: `${suggestion.cover.accentColor}15`,
                 color: suggestion.cover.accentColor,
               }}
             >
               {categoryLabels[suggestion.category] || suggestion.category}
             </span>
-            <span className="text-[10px] text-ocean-mid">~10 Seiten</span>
+            <span className="text-[10px] text-text-3">~10 Seiten</span>
           </div>
 
-          <h3 className="text-sand font-semibold text-sm leading-snug">
+          <h3 className="text-text font-semibold text-sm leading-snug">
             {suggestion.title}
           </h3>
-          <p className="text-sand-dark text-xs leading-relaxed">
+          <p className="text-text-2 text-xs leading-relaxed">
             {suggestion.subtitle}
           </p>
 
-          <p className="text-ocean-bright text-[11px] italic">
+          <p className="text-accent text-[11px]">
             {suggestion.whyItSells}
           </p>
 
           <div className="pt-1">
-            <span className="text-[10px] text-ocean-mid">
-              Zielgruppe: {suggestion.targetAudience}
+            <span className="text-[10px] text-text-3">
+              {suggestion.targetAudience}
             </span>
           </div>
         </div>
@@ -143,15 +141,15 @@ function SuggestionCard({ suggestion }: { suggestion: Suggestion }) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-ocean-light/30 border border-ocean-mid/20 rounded-2xl overflow-hidden animate-pulse">
+    <div className="bg-bg-2 border border-border rounded-xl overflow-hidden animate-pulse">
       <div className="p-3 pb-0">
-        <div className="w-full aspect-[3/4] rounded-xl bg-ocean-light/60" />
+        <div className="w-full aspect-[3/4] rounded-lg bg-bg-3" />
       </div>
       <div className="p-4 space-y-3">
-        <div className="h-3 bg-ocean-light/60 rounded w-16" />
-        <div className="h-4 bg-ocean-light/60 rounded w-3/4" />
-        <div className="h-3 bg-ocean-light/60 rounded w-full" />
-        <div className="h-3 bg-ocean-light/60 rounded w-2/3" />
+        <div className="h-3 bg-bg-3 rounded w-16" />
+        <div className="h-4 bg-bg-3 rounded w-3/4" />
+        <div className="h-3 bg-bg-3 rounded w-full" />
+        <div className="h-3 bg-bg-3 rounded w-2/3" />
       </div>
     </div>
   );
@@ -204,32 +202,29 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <header className="border-b border-ocean-light px-6 py-4 flex items-center justify-between shrink-0">
+      <header className="border-b border-border px-6 py-3.5 flex items-center justify-between shrink-0 backdrop-blur-sm bg-bg/80 sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-sunset flex items-center justify-center text-white font-bold text-sm">
+          <div className="w-7 h-7 rounded-md bg-accent flex items-center justify-center text-white font-bold text-xs">
             eb
           </div>
-          <h1 className="text-lg font-semibold text-sand">ebook-gen</h1>
-          <span className="text-xs text-sand-dark bg-ocean-light px-2 py-0.5 rounded-full">
-            v0.3
-          </span>
+          <h1 className="text-sm font-semibold text-text">ebook-gen</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1">
           <Link
             href="/library"
-            className="text-xs text-sand-dark hover:text-sand transition-colors"
+            className="text-xs text-text-2 hover:text-text px-3 py-1.5 rounded-md hover:bg-bg-3 transition-colors"
           >
             Library
           </Link>
           <Link
             href="/settings"
-            className="text-xs text-sand-dark hover:text-sand transition-colors"
+            className="text-xs text-text-2 hover:text-text px-3 py-1.5 rounded-md hover:bg-bg-3 transition-colors"
           >
             Settings
           </Link>
           <Link
             href="/create"
-            className="text-xs bg-sunset text-white px-4 py-1.5 rounded-lg font-medium hover:bg-sunset-light transition-colors"
+            className="text-xs bg-accent text-white px-4 py-1.5 rounded-md font-medium hover:bg-accent-hover transition-colors ml-2"
           >
             + Erstellen
           </Link>
@@ -237,26 +232,24 @@ export default function HomePage() {
       </header>
 
       <main className="flex-1 overflow-y-auto">
-        {/* Hero */}
         <div className="px-6 pt-10 pb-6 max-w-5xl mx-auto">
-          <h2 className="text-2xl font-bold text-sand mb-1">
+          <h2 className="text-xl font-semibold text-text mb-1 tracking-tight">
             Trending Ebook-Ideen
           </h2>
-          <p className="text-sand-dark text-sm mb-6">
-            AI-kuratierte Vorschlaege fuer 10-Seiten-Ratgeber die sich gerade
-            gut verkaufen. Klick auf eine Idee um sofort loszulegen.
+          <p className="text-text-2 text-sm mb-6">
+            AI-kuratierte Vorschlaege fuer 10-Seiten-Ratgeber. Klick auf eine Idee um sofort loszulegen.
           </p>
 
           {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 mb-8">
+          <div className="flex flex-wrap gap-1.5 mb-8">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setCategory(cat.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                   category === cat.id
-                    ? "bg-sunset text-white shadow-lg shadow-sunset/20"
-                    : "bg-ocean-light/60 text-sand-dark hover:bg-ocean-light hover:text-sand"
+                    ? "bg-accent text-white"
+                    : "text-text-3 hover:text-text-2 hover:bg-bg-3"
                 }`}
               >
                 {cat.label}
@@ -265,10 +258,9 @@ export default function HomePage() {
             <button
               onClick={() => loadSuggestions(category, true)}
               disabled={loading}
-              className="px-3 py-1.5 rounded-full text-xs font-medium bg-ocean-light/60 text-sand-dark hover:bg-ocean-light hover:text-sand transition-all ml-auto"
-              title="Neue Vorschlaege generieren"
+              className="px-3 py-1.5 rounded-md text-xs font-medium text-text-3 hover:text-text-2 hover:bg-bg-3 transition-all ml-auto"
             >
-              {loading ? "Laden..." : "Neue Ideen"}
+              {loading ? "..." : "Neue Ideen"}
             </button>
           </div>
 
@@ -293,9 +285,9 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-ocean-light px-6 py-3 flex items-center justify-between text-xs text-ocean-mid shrink-0">
+      <footer className="border-t border-border px-6 py-3 flex items-center justify-between text-xs text-text-3 shrink-0">
         <span>Claude + Pandoc + Typst</span>
-        <span>ebook-gen v0.3.0</span>
+        <span>ebook-gen</span>
       </footer>
     </div>
   );
