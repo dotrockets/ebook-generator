@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 30;
+
 export async function GET(request: NextRequest) {
   const lang = request.nextUrl.searchParams.get("lang") || "de";
   const category = request.nextUrl.searchParams.get("category") || "all";
@@ -84,11 +87,13 @@ Respond ONLY with this JSON array:
 ]`;
 
   try {
+    console.log("[suggestions] calling Claude API...");
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 4000,
       messages: [{ role: "user", content: prompt }],
     });
+    console.log("[suggestions] Claude responded, parsing...");
 
     const text =
       message.content[0].type === "text" ? message.content[0].text : "";
@@ -98,9 +103,11 @@ Respond ONLY with this JSON array:
       .trim();
     const suggestions = JSON.parse(jsonStr);
 
+    console.log(`[suggestions] ${suggestions.length} suggestions generated`);
     return NextResponse.json(suggestions);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unknown error";
+    console.error("[suggestions] error:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
