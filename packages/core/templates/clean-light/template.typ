@@ -1,16 +1,16 @@
-// Ebook Generator — Dark Ocean Template
-// A professional dark theme for ebooks
+// Ebook Generator — Clean Light Template
+// A professional light theme for ebooks
 // Usage: pandoc content.md --to=typst --template=template.typ --pdf-engine=typst
 
 // === THEME COLORS (customizable via variables) ===
-#let bg-primary = rgb("$if(bg-primary)$$bg-primary$$else$#0a2c37$endif$")
-#let bg-secondary = rgb("$if(bg-secondary)$$bg-secondary$$else$#0e4050$endif$")
-#let bg-tertiary = rgb("$if(bg-tertiary)$$bg-tertiary$$else$#12576f$endif$")
-#let text-primary = rgb("$if(text-primary)$$text-primary$$else$#f5ead6$endif$")
-#let text-secondary = rgb("$if(text-secondary)$$text-secondary$$else$#d4b87a$endif$")
-#let accent = rgb("$if(accent)$$accent$$else$#e67300$endif$")
-#let accent-red = rgb("$if(accent-red)$$accent-red$$else$#ff6b6b$endif$")
-#let accent-green = rgb("$if(accent-green)$$accent-green$$else$#69db7c$endif$")
+#let bg-primary = rgb("$if(bg-primary)$$bg-primary$$else$#ffffff$endif$")
+#let bg-secondary = rgb("$if(bg-secondary)$$bg-secondary$$else$#f8f9fa$endif$")
+#let bg-tertiary = rgb("$if(bg-tertiary)$$bg-tertiary$$else$#e9ecef$endif$")
+#let text-primary = rgb("$if(text-primary)$$text-primary$$else$#1a1a2e$endif$")
+#let text-secondary = rgb("$if(text-secondary)$$text-secondary$$else$#495057$endif$")
+#let accent = rgb("$if(accent)$$accent$$else$#6366f1$endif$")
+#let accent-red = rgb("$if(accent-red)$$accent-red$$else$#ef4444$endif$")
+#let accent-green = rgb("$if(accent-green)$$accent-green$$else$#22c55e$endif$")
 
 // === FONTS ===
 #let heading-font = "$if(heading-font)$$heading-font$$else$Playfair Display$endif$"
@@ -54,7 +54,7 @@
 $if(cover-image)$
     #place(top + center, image("$cover-image$", width: 100%))
     #place(top + center, rect(width: 100%, height: 100%, fill: gradient.linear(
-      rgb("#0a2c3700"), rgb("#0a2c3740"), rgb("#0a2c37cc"), rgb("#0a2c37"),
+      rgb("#ffffff00"), rgb("#ffffff40"), rgb("#ffffffcc"), rgb("#ffffff"),
       angle: 180deg,
     )))
 $endif$
@@ -150,11 +150,11 @@ $endif$
         $if(title)$$title$$endif$
       ]
       v(-4pt)
-      line(length: 100%, stroke: 0.3pt + bg-secondary)
+      line(length: 100%, stroke: 0.3pt + bg-tertiary)
     }
   },
   footer: context {
-    line(length: 100%, stroke: 0.3pt + bg-secondary)
+    line(length: 100%, stroke: 0.3pt + bg-tertiary)
     v(4pt)
     align(center, text(size: 8pt, fill: text-secondary)[#counter(page).display()])
   },
@@ -192,14 +192,14 @@ $endif$
 #show link: it => text(fill: accent, weight: "medium")[#it]
 
 // Strong
-#show strong: it => text(fill: rgb("#ffffff"), weight: "bold")[#it]
+#show strong: it => text(fill: rgb("#000000"), weight: "bold")[#it]
 
 // Emphasis
 #show emph: it => text(fill: text-secondary, style: "italic")[#it]
 
 // Tables
 #set table(
-  fill: (_, y) => if y == 0 { bg-secondary } else if calc.odd(y) { rgb("#0c3545") } else { bg-primary },
+  fill: (_, y) => if y == 0 { bg-secondary } else if calc.odd(y) { rgb("#f1f3f5") } else { bg-primary },
   stroke: 0.5pt + bg-tertiary,
   inset: 10pt,
 )
@@ -242,10 +242,10 @@ $endif$
 #show raw.where(block: true): it => {
   block(
     width: 100%,
-    fill: rgb("#0c3545"),
+    fill: rgb("#f1f3f5"),
     inset: 1em,
     radius: 8pt,
-  )[#text(size: 9pt)[#it]]
+  )[#text(size: 9pt, fill: rgb("#1a1a2e"))[#it]]
 }
 
 // Figures

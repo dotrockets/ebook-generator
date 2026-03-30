@@ -1,10 +1,12 @@
 import { execa } from "execa";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { resolve, dirname, relative } from "node:path";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, unlinkSync } from "node:fs";
+import { resolve, dirname, relative, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = resolve(__dirname, "..", "templates");
+const BUNDLED_FONTS = resolve(__dirname, "..", "fonts");
+const VALID_PAPER_SIZES = ["a4", "a5", "letter", "legal", "us-letter"];
 
 export interface ConvertOptions {
   /** Input markdown file path */
@@ -47,6 +49,13 @@ export interface ConvertOptions {
   fontPath?: string;
   /** Custom Pandoc arguments */
   pandocArgs?: string[];
+  /** Custom page margins */
+  margins?: {
+    top?: string;
+    bottom?: string;
+    left?: string;
+    right?: string;
+  };
   /** Custom Typst colors/fonts overrides */
   theme?: {
     bgPrimary?: string;
@@ -55,6 +64,8 @@ export interface ConvertOptions {
     textPrimary?: string;
     textSecondary?: string;
     accent?: string;
+    accentRed?: string;
+    accentGreen?: string;
     headingFont?: string;
     bodyFont?: string;
   };
@@ -101,6 +112,15 @@ function buildPandocArgs(options: ConvertOptions, format: string): string[] {
     if (options.tocDepth) args.push(`--variable=toc-depth:${options.tocDepth}`);
     if (options.backPage !== false) args.push("--variable=back-page:true");
 
+    // Margin overrides
+    if (options.margins) {
+      const m = options.margins;
+      if (m.top) args.push(`--variable=margin-top:${m.top}`);
+      if (m.bottom) args.push(`--variable=margin-bottom:${m.bottom}`);
+      if (m.left) args.push(`--variable=margin-left:${m.left}`);
+      if (m.right) args.push(`--variable=margin-right:${m.right}`);
+    }
+
     // Theme overrides
     if (options.theme) {
       const t = options.theme;
@@ -110,13 +130,16 @@ function buildPandocArgs(options: ConvertOptions, format: string): string[] {
       if (t.textPrimary) args.push(`--variable=text-primary:${t.textPrimary}`);
       if (t.textSecondary) args.push(`--variable=text-secondary:${t.textSecondary}`);
       if (t.accent) args.push(`--variable=accent:${t.accent}`);
+      if (t.accentRed) args.push(`--variable=accent-red:${t.accentRed}`);
+      if (t.accentGreen) args.push(`--variable=accent-green:${t.accentGreen}`);
       if (t.headingFont) args.push(`--variable=heading-font:${t.headingFont}`);
       if (t.bodyFont) args.push(`--variable=body-font:${t.bodyFont}`);
     }
 
-    // Font path for typst
-    if (options.fontPath) {
-      args.push(`--pdf-engine-opt=--font-path`, `--pdf-engine-opt=${resolve(options.fontPath)}`);
+    // Font path for typst — auto-detect bundled fonts if not specified
+    const fontPath = options.fontPath ?? (existsSync(BUNDLED_FONTS) ? BUNDLED_FONTS : null);
+    if (fontPath) {
+      args.push(`--pdf-engine-opt=--font-path`, `--pdf-engine-opt=${resolve(fontPath)}`);
     }
   } else if (format === "epub") {
     args.push("--to=epub3");
@@ -210,7 +233,11 @@ function preprocessMarkdown(inputPath: string, format: OutputFormat): string {
 
   // Write preprocessed file
   const preprocessedPath = inputPath.replace(/\.md$/, ".preprocessed.md");
-  writeFileSync(preprocessedPath, content, "utf-8");
+  try {
+    writeFileSync(preprocessedPath, content, "utf-8");
+  } catch (err) {
+    throw new Error(`Failed to write preprocessed file: ${err instanceof Error ? err.message : err}`);
+  }
   return preprocessedPath;
 }
 
@@ -221,6 +248,15 @@ export async function convert(
   if (!existsSync(options.input)) {
     throw new Error(`Input file not found: ${options.input}`);
   }
+  if (options.paper && !VALID_PAPER_SIZES.includes(options.paper)) {
+    throw new Error(`Invalid paper size "${options.paper}". Valid: ${VALID_PAPER_SIZES.join(", ")}`);
+  }
+
+  // Ensure output directory exists
+  const outputDir = dirname(resolve(options.output));
+  if (!existsSync(outputDir)) {
+    mkdirSync(outputDir, { recursive: true });
+  }
 
   // Preprocess markdown for Typst compatibility
   const processedInput = preprocessMarkdown(options.input, format);
@@ -229,10 +265,20 @@ export async function convert(
   const start = performance.now();
   const args = buildPandocArgs(processedOptions, format);
 
-  await execa("pandoc", args, {
-    stdio: "pipe",
-    cwd: dirname(resolve(processedOptions.input)),
-  });
+  try {
+    await execa("pandoc", args, {
+      stdio: "pipe",
+      cwd: dirname(resolve(processedOptions.input)),
+    });
+  } catch (err: unknown) {
+    const stderr = (err as { stderr?: string }).stderr;
+    throw new Error(`Pandoc conversion failed (${format}): ${stderr || (err instanceof Error ? err.message : err)}`);
+  } finally {
+    // Clean up preprocessed temp file
+    if (processedInput !== options.input) {
+      try { unlinkSync(processedInput); } catch { /* ignore */ }
+    }
+  }
 
   const duration = Math.round(performance.now() - start);
 
@@ -250,7 +296,8 @@ export async function convertAll(
 ): Promise<ConvertResult[]> {
   const slug = options.title
     .replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, "")
-    .replace(/\s+/g, "-");
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
 
   const results: ConvertResult[] = [];
 

@@ -78,12 +78,19 @@ export async function deleteEntry(id: string): Promise<boolean> {
   return true;
 }
 
+function validateFilename(filename: string): void {
+  if (filename.includes("..") || filename.startsWith("/") || filename.includes("\0")) {
+    throw new Error("Invalid filename");
+  }
+}
+
 /** Save a file to the data directory and return the filename */
 export async function saveFile(
   id: string,
   filename: string,
   data: Buffer
 ): Promise<string> {
+  validateFilename(filename);
   const dir = join(DATA_DIR, "files", id);
   await mkdir(dir, { recursive: true });
   const path = join(dir, filename);
@@ -96,6 +103,7 @@ export async function loadFile(
   id: string,
   filename: string
 ): Promise<Buffer | null> {
+  validateFilename(filename);
   const path = join(DATA_DIR, "files", id, filename);
   if (!existsSync(path)) return null;
   return readFile(path);

@@ -16,6 +16,13 @@ export async function POST(request: NextRequest) {
     style?: "landscape" | "portrait" | "square";
   };
 
+  if (!imagePrompt || typeof imagePrompt !== "string" || imagePrompt.length > 1000) {
+    return NextResponse.json({ error: "imagePrompt must be 1-1000 characters" }, { status: 400 });
+  }
+  if (ebookId && (typeof ebookId !== "string" || /[\/\\.]/.test(ebookId))) {
+    return NextResponse.json({ error: "Invalid ebookId" }, { status: 400 });
+  }
+
   const token = process.env.REPLICATE_API_TOKEN;
   if (!token) {
     return NextResponse.json(

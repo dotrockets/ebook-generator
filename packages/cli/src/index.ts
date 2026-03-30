@@ -30,6 +30,7 @@ const { values, positionals } = parseArgs({
     "no-toc": { type: "boolean" },
     "toc-depth": { type: "string" },
     paper: { type: "string" },
+    quiet: { type: "boolean", short: "q" },
     help: { type: "boolean", short: "h" },
     version: { type: "boolean", short: "v" },
     check: { type: "boolean" },
@@ -60,7 +61,8 @@ function printHelp() {
     --website <url>          Website URL
     --no-toc                 Disable table of contents
     --toc-depth <n>          TOC depth (default: 2)
-    --paper <size>           Paper size (default: a4)
+    --paper <size>           Paper size: a4, a5, us-letter (default: a4)
+    -q, --quiet              Suppress non-error output
     --check                  Check if dependencies are installed
     --templates              List available templates
     -h, --help               Show this help
@@ -160,28 +162,43 @@ async function main() {
     publisher: values.publisher ?? fm.publisher,
     website: values.website ?? fm.website,
     toc: !values["no-toc"],
-    tocDepth: values["toc-depth"] ? parseInt(values["toc-depth"]) : (fm["toc-depth"] ?? 2),
+    tocDepth: values["toc-depth"] ? (() => {
+      const d = parseInt(values["toc-depth"]!);
+      if (isNaN(d) || d < 1 || d > 6) {
+        console.error("Error: --toc-depth must be a number between 1 and 6");
+        process.exit(1);
+      }
+      return d;
+    })() : (fm["toc-depth"] ?? 2),
     paper: values.paper ?? fm.paper ?? "a4",
     date: fm.date,
   };
 
-  // Determine formats
+  // Determine and validate formats
   const formatStr = values.format ?? fm.format ?? "pdf";
-  const formats = formatStr.split(",").map((f: string) => f.trim()) as OutputFormat[];
+  const VALID_FORMATS = ["pdf", "epub", "docx"];
+  const formats: string[] = formatStr.split(",").map((f: string) => f.trim());
+  const invalid = formats.find((f: string) => !VALID_FORMATS.includes(f));
+  if (invalid) {
+    console.error(`Error: Invalid format "${invalid}". Valid formats: ${VALID_FORMATS.join(", ")}`);
+    process.exit(1);
+  }
+
+  const log = values.quiet ? () => {} : console.log;
 
   // Determine output
   if (values.output && formats.length === 1) {
     options.output = resolve(values.output);
-    const result = await convert(options, formats[0]);
-    console.log(`\n  ✓ ${result.format.toUpperCase()} → ${result.outputPath} (${result.duration}ms)\n`);
+    const result = await convert(options, formats[0] as OutputFormat);
+    log(`\n  ✓ ${result.format.toUpperCase()} → ${result.outputPath} (${result.duration}ms)\n`);
   } else {
     const outputDir = values.output ? resolve(values.output) : dirname(inputPath);
-    const results = await convertAll(options, outputDir, formats);
-    console.log();
+    const results = await convertAll(options, outputDir, formats as OutputFormat[]);
+    log();
     for (const result of results) {
-      console.log(`  ✓ ${result.format.toUpperCase()} → ${result.outputPath} (${result.duration}ms)`);
+      log(`  ✓ ${result.format.toUpperCase()} → ${result.outputPath} (${result.duration}ms)`);
     }
-    console.log();
+    log();
   }
 }
 

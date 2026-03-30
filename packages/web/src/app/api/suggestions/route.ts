@@ -10,6 +10,12 @@ const DATA_DIR = process.env.DATA_DIR || "/tmp/ebook-gen-data";
 const CACHE_DIR = join(DATA_DIR, "cache");
 const CACHE_MAX_AGE = 60 * 60 * 1000; // 1 hour
 
+const VALID_LANGS = ["de", "en"];
+const VALID_CATEGORIES = [
+  "all", "self-help", "health", "productivity", "finance",
+  "relationships", "parenting", "mental-health", "career",
+];
+
 function cacheFile(lang: string, category: string) {
   return join(CACHE_DIR, `suggestions-${lang}-${category}.json`);
 }
@@ -136,6 +142,14 @@ export async function GET(request: NextRequest) {
   const lang = request.nextUrl.searchParams.get("lang") || "de";
   const category = request.nextUrl.searchParams.get("category") || "all";
   const refresh = request.nextUrl.searchParams.get("refresh") === "1";
+
+  if (!VALID_LANGS.includes(lang)) {
+    return NextResponse.json({ error: "Invalid lang" }, { status: 400 });
+  }
+
+  if (!VALID_CATEGORIES.includes(category)) {
+    return NextResponse.json({ error: "Invalid category" }, { status: 400 });
+  }
 
   // 1. Try cache first (unless forced refresh)
   if (!refresh) {

@@ -278,7 +278,7 @@ export default function HomePage() {
                   <SkeletonCard key={i} />
                 ))
               : suggestions.map((s, i) => (
-                  <SuggestionCard key={i} suggestion={s} />
+                  <SuggestionCard key={`${s.title}-${i}`} suggestion={s} />
                 ))}
           </div>
         </div>

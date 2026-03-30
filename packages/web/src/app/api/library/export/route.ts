@@ -27,8 +27,12 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { id, format } = body as { id: string; format: string };
 
+  const VALID_FORMATS = ["pdf", "epub", "docx"];
   if (!id || !format) {
     return NextResponse.json({ error: "id and format required" }, { status: 400 });
+  }
+  if (!VALID_FORMATS.includes(format)) {
+    return NextResponse.json({ error: `Invalid format. Valid: ${VALID_FORMATS.join(", ")}` }, { status: 400 });
   }
 
   const entry = await getEntry(id);

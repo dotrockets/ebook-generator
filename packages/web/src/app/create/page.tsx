@@ -161,10 +161,19 @@ function CreatePageInner() {
     setAutoProgress(null);
     setAutoStatus("Gliederung wird erstellt...");
 
+    const abortController = new AbortController();
+    const timeout = setTimeout(() => {
+      abortController.abort();
+      setAutoError("Zeitüberschreitung — die Generierung hat zu lange gedauert.");
+      setAutoGenerating(false);
+      setAutoStatus(null);
+    }, 10 * 60 * 1000);
+
     try {
       const res = await fetch("/api/auto-generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: abortController.signal,
         body: JSON.stringify({
           topic: topic.trim(),
           pages,
@@ -245,9 +254,12 @@ function CreatePageInner() {
         }
       }
     } catch (err: unknown) {
-      setAutoError(err instanceof Error ? err.message : "Unknown error");
-      setAutoStatus(null);
+      if ((err as Error).name !== "AbortError") {
+        setAutoError(err instanceof Error ? err.message : "Unknown error");
+        setAutoStatus(null);
+      }
     } finally {
+      clearTimeout(timeout);
       setAutoGenerating(false);
     }
   }

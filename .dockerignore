@@ -7,3 +7,12 @@ node_modules
 .turbo
 .DS_Store
 examples
+.claude/
+*.log
+.env*
+coverage/
+**/*.map
+.eslintcache
+.next/cache
+packages/*/dist
+CLAUDE.md

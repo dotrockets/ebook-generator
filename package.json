@@ -1,6 +1,8 @@
 {
   "name": "ebook-generator",
   "private": true,
+  "license": "MIT",
+  "author": "Björn Puls <mail@bjoernpuls.com>",
   "workspaces": [
     "packages/*"
   ],

@@ -1,4 +1,8 @@
+ARG PANDOC_VERSION=3.6.4
+
 FROM node:22-bookworm-slim AS base
+
+ARG PANDOC_VERSION
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -7,9 +11,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Install pandoc 3.6.4 (Debian ships 2.17 which is too old for --pdf-engine=typst)
-RUN curl -fsSL https://github.com/jgm/pandoc/releases/download/3.6.4/pandoc-3.6.4-linux-amd64.tar.gz \
-    | tar xz --strip-components=2 -C /usr/local/bin/ pandoc-3.6.4/bin/pandoc
+# Install pandoc (Debian ships 2.17 which is too old for --pdf-engine=typst)
+RUN curl -fsSL https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz \
+    | tar xz --strip-components=2 -C /usr/local/bin/ pandoc-${PANDOC_VERSION}/bin/pandoc
 
 # Install typst (latest binary)
 RUN curl -fsSL https://github.com/typst/typst/releases/latest/download/typst-x86_64-unknown-linux-musl.tar.xz \
@@ -23,7 +27,7 @@ COPY package.json package-lock.json ./
 COPY packages/core/package.json packages/core/
 COPY packages/cli/package.json packages/cli/
 COPY packages/web/package.json packages/web/
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 # --- Build ---
 FROM base AS builder
@@ -62,4 +66,5 @@ COPY --from=builder /app/packages/core/package.json ./packages/core/package.json
 
 USER nextjs
 EXPOSE 3000
+STOPSIGNAL SIGTERM
 CMD ["node", "packages/web/server.js"]

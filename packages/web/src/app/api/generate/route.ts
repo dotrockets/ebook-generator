@@ -27,7 +27,12 @@ export async function POST(request: NextRequest) {
   const title = (formData.get("title") as string) || "Untitled";
   const subtitle = formData.get("subtitle") as string | null;
   const authors = (formData.get("authors") as string) || "Unknown";
-  const format = ((formData.get("format") as string) || "pdf") as OutputFormat;
+  const formatStr = (formData.get("format") as string) || "pdf";
+  const VALID_FORMATS: OutputFormat[] = ["pdf", "epub", "docx"];
+  if (!VALID_FORMATS.includes(formatStr as OutputFormat)) {
+    return NextResponse.json({ error: `Invalid format. Valid: ${VALID_FORMATS.join(", ")}` }, { status: 400 });
+  }
+  const format = formatStr as OutputFormat;
   const template = (formData.get("template") as string) || "dark-ocean";
   const lang = (formData.get("lang") as string) || "de";
   const paper = (formData.get("paper") as string) || "a4";
@@ -53,11 +58,13 @@ export async function POST(request: NextRequest) {
     const inputPath = join(workDir, "content.md");
     await writeFile(inputPath, content, "utf-8");
 
-    // Handle cover image
+    // Handle cover image (sanitize filename)
     let coverImagePath: string | undefined;
     if (coverImage) {
       const coverBytes = new Uint8Array(await coverImage.arrayBuffer());
-      coverImagePath = join(workDir, coverImage.name);
+      const ext = coverImage.name.split(".").pop() || "png";
+      const safeName = `cover-${Date.now()}.${ext.replace(/[^a-zA-Z0-9]/g, "")}`;
+      coverImagePath = join(workDir, safeName);
       await writeFile(coverImagePath, coverBytes);
     }
 

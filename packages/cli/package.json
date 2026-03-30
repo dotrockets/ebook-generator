@@ -2,13 +2,24 @@
   "name": "ebook-gen",
   "version": "0.1.0",
   "description": "Generate beautiful ebooks from Markdown — PDF, EPUB, DOCX",
+  "license": "MIT",
+  "author": "Björn Puls <mail@bjoernpuls.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dotrockets/ebook-generator"
+  },
+  "homepage": "https://github.com/dotrockets/ebook-generator#readme",
+  "bugs": {
+    "url": "https://github.com/dotrockets/ebook-generator/issues"
+  },
   "type": "module",
   "bin": {
     "ebook-gen": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "prepare": "tsc"
   },
   "files": [
     "dist"
@@ -24,9 +35,11 @@
     "ebook",
     "pdf",
     "epub",
+    "docx",
     "markdown",
     "typst",
     "pandoc",
-    "book"
+    "book",
+    "generator"
   ]
 }

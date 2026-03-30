@@ -31,7 +31,7 @@ function CoverThumbnail({ ebook }: { ebook: EbookEntry }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/api/library/download?id=${ebook.id}&format=cover`}
-            alt=""
+            alt={ebook.title}
             className="w-full h-full object-cover absolute inset-0"
           />
           {/* Gradient overlay for text readability */}
@@ -72,21 +72,27 @@ export default function LibraryPage() {
   const [exporting, setExporting] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    fetch("/api/library")
+    const controller = new AbortController();
+    fetch("/api/library", { signal: controller.signal })
       .then((r) => r.json())
       .then(setEbooks)
+      .catch((err) => { if (err.name !== "AbortError") console.error(err); })
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, []);
 
   async function handleExport(id: string, format: string) {
     const key = `${id}-${format}`;
     setExporting((prev) => ({ ...prev, [key]: "loading" }));
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000);
 
     try {
       const res = await fetch("/api/library/export", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, format }),
+        signal: controller.signal,
       });
 
       const data = await res.json();
@@ -106,9 +112,11 @@ export default function LibraryPage() {
       setExporting((prev) => ({ ...prev, [key]: "done" }));
       setTimeout(() => setExporting((prev) => { const n = { ...prev }; delete n[key]; return n; }), 2000);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Export failed";
+      const msg = err instanceof Error ? (err.name === "AbortError" ? "Zeitüberschreitung" : err.message) : "Export failed";
       setExporting((prev) => ({ ...prev, [key]: `error:${msg}` }));
       setTimeout(() => setExporting((prev) => { const n = { ...prev }; delete n[key]; return n; }), 4000);
+    } finally {
+      clearTimeout(timeout);
     }
   }
 

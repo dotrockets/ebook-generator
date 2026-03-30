@@ -5,9 +5,13 @@ import { getEntry, loadFile } from "../store";
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id");
   const format = request.nextUrl.searchParams.get("format") || "pdf";
+  const VALID_FORMATS = ["pdf", "epub", "docx", "md", "cover"];
 
   if (!id) {
     return NextResponse.json({ error: "No id" }, { status: 400 });
+  }
+  if (!VALID_FORMATS.includes(format)) {
+    return NextResponse.json({ error: `Invalid format. Valid: ${VALID_FORMATS.join(", ")}` }, { status: 400 });
   }
 
   const entry = await getEntry(id);

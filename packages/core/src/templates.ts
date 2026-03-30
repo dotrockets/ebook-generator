@@ -13,13 +13,15 @@ export interface TemplateInfo {
 export function listTemplates(): TemplateInfo[] {
   if (!existsSync(TEMPLATES_DIR)) return [];
 
-  return readdirSync(TEMPLATES_DIR, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .filter((d) => existsSync(resolve(TEMPLATES_DIR, d.name, "template.typ")))
-    .map((d) => ({
-      name: d.name,
-      path: resolve(TEMPLATES_DIR, d.name, "template.typ"),
-    }));
+  return readdirSync(TEMPLATES_DIR, { withFileTypes: true }).reduce<TemplateInfo[]>((acc, d) => {
+    if (d.isDirectory()) {
+      const templatePath = resolve(TEMPLATES_DIR, d.name, "template.typ");
+      if (existsSync(templatePath)) {
+        acc.push({ name: d.name, path: templatePath });
+      }
+    }
+    return acc;
+  }, []);
 }
 
 export function getTemplatePath(name: string): string {

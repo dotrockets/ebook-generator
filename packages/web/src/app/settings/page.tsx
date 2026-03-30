@@ -99,11 +99,16 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/settings")
-      .then((r) => r.json())
-      .then(setSettings);
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load settings");
+        return r.json();
+      })
+      .then(setSettings)
+      .catch((err) => setLoadError(err instanceof Error ? err.message : "Einstellungen konnten nicht geladen werden"));
   }, []);
 
   async function handleSave() {
@@ -136,7 +141,14 @@ export default function SettingsPage() {
   if (!settings) {
     return (
       <div className="flex items-center justify-center min-h-screen text-text-2">
-        Laden...
+        {loadError ? (
+          <div className="text-center space-y-2">
+            <p className="text-coral">{loadError}</p>
+            <button onClick={() => window.location.reload()} className="text-xs text-accent hover:underline">
+              Nochmal versuchen
+            </button>
+          </div>
+        ) : "Laden..."}
       </div>
     );
   }

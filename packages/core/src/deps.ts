@@ -47,10 +47,12 @@ export async function checkDependencies(): Promise<DepStatus[]> {
         required: dep.required,
         installHint: dep.installHint,
       });
-    } catch {
+    } catch (err: unknown) {
+      const isNotFound = (err as { code?: string }).code === "ENOENT";
       results.push({
         name: dep.name,
         installed: false,
+        version: isNotFound ? undefined : `Error: ${err instanceof Error ? err.message : String(err)}`,
         required: dep.required,
         installHint: dep.installHint,
       });

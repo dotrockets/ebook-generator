@@ -170,10 +170,35 @@ export async function POST(request: NextRequest) {
     paper?: string;
   };
 
-  if (!topic) {
-    return new Response(JSON.stringify({ error: "No topic provided" }), {
+  const VALID_PAGES = [5, 10, 15, 20, 30, 50];
+  const VALID_LANGS = ["de", "en"];
+  const VALID_FORMATS = ["pdf", "epub", "docx"];
+  const VALID_PAPERS = ["a4", "a5", "us-letter"];
+
+  if (!topic || typeof topic !== "string" || topic.length < 1 || topic.length > 500) {
+    return new Response(JSON.stringify({ error: "Topic must be 1-500 characters" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
+    });
+  }
+  if (!VALID_PAGES.includes(pages)) {
+    return new Response(JSON.stringify({ error: `Invalid pages. Valid: ${VALID_PAGES.join(", ")}` }), {
+      status: 400, headers: { "Content-Type": "application/json" },
+    });
+  }
+  if (!VALID_LANGS.includes(lang)) {
+    return new Response(JSON.stringify({ error: "Invalid lang" }), {
+      status: 400, headers: { "Content-Type": "application/json" },
+    });
+  }
+  if (!VALID_FORMATS.includes(format)) {
+    return new Response(JSON.stringify({ error: "Invalid format" }), {
+      status: 400, headers: { "Content-Type": "application/json" },
+    });
+  }
+  if (!VALID_PAPERS.includes(paper)) {
+    return new Response(JSON.stringify({ error: "Invalid paper size" }), {
+      status: 400, headers: { "Content-Type": "application/json" },
     });
   }
 
@@ -355,9 +380,10 @@ export async function POST(request: NextRequest) {
       // Step 3: Assemble markdown
       await send("status", { step: "assemble", message: "Ebook wird zusammengefuegt..." });
 
+      const escYaml = (s: string) => s.replace(/"/g, '\\"').replace(/\n/g, " ");
       const frontmatter = `---
-title: "${outline.title}"
-subtitle: "${outline.subtitle}"
+title: "${escYaml(outline.title)}"
+subtitle: "${escYaml(outline.subtitle)}"
 authors: [${authorName}]
 lang: ${lang}
 ---`;
