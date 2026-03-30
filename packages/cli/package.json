@@ -19,7 +19,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "prepare": "tsc"
+    "prepublishOnly": "tsc"
   },
   "files": [
     "dist"
