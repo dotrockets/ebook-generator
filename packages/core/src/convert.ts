@@ -55,6 +55,10 @@ export interface ConvertOptions {
     bottom?: string;
     left?: string;
     right?: string;
+    /** Binding edge margin (for print-ready template) */
+    inside?: string;
+    /** Outer edge margin (for print-ready template) */
+    outside?: string;
   };
   /** Custom Typst colors/fonts overrides */
   theme?: {
@@ -119,6 +123,8 @@ function buildPandocArgs(options: ConvertOptions, format: string): string[] {
       if (m.bottom) args.push(`--variable=margin-bottom:${m.bottom}`);
       if (m.left) args.push(`--variable=margin-left:${m.left}`);
       if (m.right) args.push(`--variable=margin-right:${m.right}`);
+      if (m.inside) args.push(`--variable=margin-inside:${m.inside}`);
+      if (m.outside) args.push(`--variable=margin-outside:${m.outside}`);
     }
 
     // Theme overrides
