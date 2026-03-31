@@ -80,6 +80,7 @@ function CreatePageInner() {
   const [pages, setPages] = useState(20);
   const [autoFormat, setAutoFormat] = useState<Format>("pdf");
   const [autoLang, setAutoLang] = useState("de");
+  const [autoTemplate, setAutoTemplate] = useState("dark-ocean");
   const [autoPaper, setAutoPaper] = useState("a4");
   const [autoGenerating, setAutoGenerating] = useState(false);
   const [autoError, setAutoError] = useState<string | null>(null);
@@ -179,7 +180,7 @@ function CreatePageInner() {
           pages,
           lang: autoLang,
           format: autoFormat,
-          template: "dark-ocean",
+          template: autoTemplate,
           paper: autoPaper,
         }),
       });
@@ -394,6 +395,21 @@ function CreatePageInner() {
             </div>
 
             <div className="flex gap-3">
+              <div className="flex-1">
+                <label className="block text-xs text-text-2 mb-1.5 uppercase tracking-wider">
+                  Template
+                </label>
+                <select
+                  value={autoTemplate}
+                  onChange={(e) => setAutoTemplate(e.target.value)}
+                  disabled={autoGenerating}
+                  className="w-full bg-bg-3 border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent transition-colors"
+                >
+                  <option value="dark-ocean">Dark Ocean</option>
+                  <option value="clean-light">Clean Light</option>
+                  <option value="print-ready">Print-Ready</option>
+                </select>
+              </div>
               <div className="flex-1">
                 <label className="block text-xs text-text-2 mb-1.5 uppercase tracking-wider">
                   Sprache
@@ -630,6 +646,8 @@ function CreatePageInner() {
                   className="w-full bg-bg-3 border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent transition-colors"
                 >
                   <option value="dark-ocean">Dark Ocean</option>
+                  <option value="clean-light">Clean Light</option>
+                  <option value="print-ready">Print-Ready (Druck)</option>
                 </select>
               </div>
               <div>
