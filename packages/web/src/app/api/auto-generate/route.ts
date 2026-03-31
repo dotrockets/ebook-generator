@@ -227,7 +227,16 @@ export async function POST(request: NextRequest) {
     }
   };
 
+  // SSE keepalive to prevent proxy timeout during long operations
+  const keepalive = setInterval(() => {
+    if (streamClosed) return;
+    writer.write(encoder.encode(": keepalive\n\n")).catch(() => {
+      streamClosed = true;
+    });
+  }, 15000);
+
   const closeStream = async () => {
+    clearInterval(keepalive);
     if (streamClosed) return;
     streamClosed = true;
     try { await writer.close(); } catch { /* already closed */ }
