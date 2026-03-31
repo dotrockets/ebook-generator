@@ -648,6 +648,7 @@ function CreatePageInner() {
                   <option value="dark-ocean">Dark Ocean</option>
                   <option value="clean-light">Clean Light</option>
                   <option value="print-ready">Print-Ready (Druck)</option>
+                  <option value="kindle-kdp">Amazon KDP</option>
                 </select>
               </div>
               <div>

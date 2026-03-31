@@ -45,6 +45,12 @@ export interface ConvertOptions {
   date?: string;
   /** Paper size (default: "a4") */
   paper?: string;
+  /** Custom page width (e.g. "15.24cm" for KDP 6x9) */
+  pageWidth?: string;
+  /** Custom page height (e.g. "22.86cm" for KDP 6x9) */
+  pageHeight?: string;
+  /** Font size (e.g. "10pt") */
+  fontSize?: string;
   /** Font directory path */
   fontPath?: string;
   /** Custom Pandoc arguments */
@@ -111,6 +117,9 @@ function buildPandocArgs(options: ConvertOptions, format: string): string[] {
     }
     if (options.date) args.push(`--variable=date:${options.date}`);
     if (options.paper) args.push(`--variable=paper:${options.paper}`);
+    if (options.pageWidth) args.push(`--variable=page-width:${options.pageWidth}`);
+    if (options.pageHeight) args.push(`--variable=page-height:${options.pageHeight}`);
+    if (options.fontSize) args.push(`--variable=font-size:${options.fontSize}`);
     if (options.lang) args.push(`--variable=lang:${options.lang}`);
     if (options.toc !== false) args.push("--variable=toc:true");
     if (options.tocDepth) args.push(`--variable=toc-depth:${options.tocDepth}`);
