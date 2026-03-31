@@ -24,6 +24,15 @@ export interface EbookEntry {
   markdownFile?: string;
   /** Generated output files */
   outputFiles: Record<string, string>; // format -> filename
+  /** KDP publishing metadata */
+  kdpMetadata?: {
+    description: string;
+    keywords: string[];
+    categories: { name: string; path: string }[];
+    pricing: { recommendedEUR: number; recommendedUSD: number; reasoning: string };
+    searchTitle: string;
+    searchSubtitle: string;
+  };
   createdAt: string;
   updatedAt: string;
 }

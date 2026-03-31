@@ -502,7 +502,45 @@ lang: ${lang}
         },
       });
 
-      // Step 6: Send result (no file data — frontend downloads via library API)
+      // Step 6: Generate KDP metadata if using KDP template
+      let kdpMetadata = undefined;
+      if (template === "kindle-kdp") {
+        try {
+          await send("status", { step: "kdp", message: "KDP-Metadaten werden erstellt..." });
+          const kdpRes = await anthropic.messages.create({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 3000,
+            messages: [{
+              role: "user",
+              content: `Du bist ein Amazon KDP Publishing-Experte. Erstelle Metadaten fuer:
+Titel: "${outline.title}"
+Untertitel: "${outline.subtitle || ""}"
+Thema: "${topic}"
+Kapitel: ${outline.chapters.map((c) => c.title).join(", ")}
+
+Antworte NUR mit JSON:
+{
+  "description": "HTML-Beschreibung fuer Amazon (<b>,<i>,<br>,<p>,<ul>,<li>). Max 3800 Zeichen. Verkaufsstark, Hook-Satz am Anfang, Bullet Points.",
+  "keywords": ["kw1","kw2","kw3","kw4","kw5","kw6","kw7"],
+  "categories": [{"name":"Kategorie","path":"Books > ..."},{"name":"Kategorie2","path":"Books > ..."},{"name":"Kategorie3","path":"Books > ..."}],
+  "pricing": {"recommendedEUR":9.99,"recommendedUSD":12.99,"reasoning":"Begruendung"},
+  "searchTitle": "SEO-optimierter Amazon-Titel",
+  "searchSubtitle": "SEO-optimierter Untertitel mit Keywords"
+}
+Keywords: 7x, max 50 Zeichen, 2-3 Woerter. Preis: min 9.99 EUR (60% Royalty).`,
+            }],
+          });
+          const kdpText = kdpRes.content[0].type === "text" ? kdpRes.content[0].text : "";
+          const kdpJson = kdpText.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
+          kdpMetadata = JSON.parse(kdpJson);
+          await updateEntry(ebookId, { kdpMetadata });
+          await send("kdp_metadata", kdpMetadata);
+        } catch (e) {
+          console.error("[auto-generate] KDP metadata failed:", e);
+        }
+      }
+
+      // Step 7: Send result (no file data — frontend downloads via library API)
       await send("done", {
         id: ebookId,
         title: outline.title,
@@ -512,6 +550,7 @@ lang: ${lang}
         conversionTime: result.duration,
         filename: outFilename,
         format,
+        kdpMetadata: kdpMetadata || undefined,
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";

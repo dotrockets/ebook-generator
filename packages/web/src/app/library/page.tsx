@@ -19,6 +19,15 @@ interface EbookEntry {
   markdownFile?: string;
   outputFiles: Record<string, string>;
   createdAt: string;
+  template?: string;
+  kdpMetadata?: {
+    description: string;
+    keywords: string[];
+    categories: { name: string; path: string }[];
+    pricing: { recommendedEUR: number; recommendedUSD: number; reasoning: string };
+    searchTitle: string;
+    searchSubtitle: string;
+  };
 }
 
 function CoverThumbnail({ ebook }: { ebook: EbookEntry }) {
@@ -64,12 +73,108 @@ function CoverThumbnail({ ebook }: { ebook: EbookEntry }) {
   );
 }
 
+function CopyButton({ text, label }: { text: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+      className="text-[10px] px-2 py-1 rounded bg-bg-3 hover:bg-bg-4 text-text-2 hover:text-text transition-colors"
+    >
+      {copied ? "Kopiert!" : label}
+    </button>
+  );
+}
+
+function KdpPanel({ ebook }: { ebook: EbookEntry }) {
+  const kdp = ebook.kdpMetadata;
+  if (!kdp) return null;
+
+  return (
+    <div className="mt-3 p-3 rounded-lg bg-bg-3/50 border border-border space-y-3">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-[10px] uppercase tracking-wider font-semibold text-accent">KDP Publishing Kit</span>
+      </div>
+
+      {/* Search Title */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] text-text-3 uppercase tracking-wider">Amazon-Titel</span>
+          <CopyButton text={kdp.searchTitle} label="Kopieren" />
+        </div>
+        <p className="text-xs text-text">{kdp.searchTitle}</p>
+      </div>
+
+      {/* Search Subtitle */}
+      {kdp.searchSubtitle && (
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] text-text-3 uppercase tracking-wider">Amazon-Untertitel</span>
+            <CopyButton text={kdp.searchSubtitle} label="Kopieren" />
+          </div>
+          <p className="text-xs text-text">{kdp.searchSubtitle}</p>
+        </div>
+      )}
+
+      {/* Description */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] text-text-3 uppercase tracking-wider">Beschreibung ({kdp.description.length}/4000)</span>
+          <CopyButton text={kdp.description} label="HTML kopieren" />
+        </div>
+        <div className="text-xs text-text-2 max-h-24 overflow-y-auto bg-bg-3 rounded p-2" dangerouslySetInnerHTML={{ __html: kdp.description }} />
+      </div>
+
+      {/* Keywords */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] text-text-3 uppercase tracking-wider">7 Keywords</span>
+          <CopyButton text={kdp.keywords.join("\n")} label="Alle kopieren" />
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {kdp.keywords.map((kw, i) => (
+            <span key={i} className="text-[10px] bg-bg-3 text-text-2 px-2 py-0.5 rounded">{kw}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* Categories */}
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] text-text-3 uppercase tracking-wider">3 Kategorien</span>
+        </div>
+        <div className="space-y-1">
+          {kdp.categories.map((cat, i) => (
+            <div key={i} className="text-[10px] text-text-2">
+              <span className="text-text font-medium">{cat.name}</span>
+              <span className="text-text-3 ml-1">({cat.path})</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Pricing */}
+      <div className="flex items-center gap-3 text-xs">
+        <span className="text-text-3">Empf. Preis:</span>
+        <span className="text-text font-semibold">{kdp.pricing.recommendedEUR.toFixed(2)} EUR</span>
+        <span className="text-text font-semibold">{kdp.pricing.recommendedUSD.toFixed(2)} USD</span>
+        <span className="text-[10px] text-accent">60% Royalty</span>
+      </div>
+
+      {/* AI Disclosure */}
+      <div className="text-[10px] text-text-3 italic border-t border-border pt-2">
+        Hinweis: Bei KDP muss angegeben werden, dass der Inhalt AI-generiert ist.
+      </div>
+    </div>
+  );
+}
+
 const ALL_FORMATS = ["pdf", "epub", "docx"] as const;
 
 export default function LibraryPage() {
   const [ebooks, setEbooks] = useState<EbookEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState<Record<string, string>>({});
+  const [expandedKdp, setExpandedKdp] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -280,6 +385,14 @@ export default function LibraryPage() {
                         MD
                       </a>
                     )}
+                    {ebook.kdpMetadata && (
+                      <button
+                        onClick={() => setExpandedKdp(expandedKdp === ebook.id ? null : ebook.id)}
+                        className="bg-accent/10 hover:bg-accent/20 text-accent px-3 py-1.5 rounded-md text-[11px] font-semibold transition-colors"
+                      >
+                        {expandedKdp === ebook.id ? "KDP ▲" : "KDP ▼"}
+                      </button>
+                    )}
                     <div className="flex-1" />
                     <button
                       onClick={() => handleDelete(ebook.id)}
@@ -289,6 +402,7 @@ export default function LibraryPage() {
                       ✕
                     </button>
                   </div>
+                  {expandedKdp === ebook.id && <KdpPanel ebook={ebook} />}
                 </div>
               </div>
             ))}
