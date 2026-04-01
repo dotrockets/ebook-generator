@@ -202,12 +202,9 @@ function CreatePageInner() {
 
       if (!res.ok) {
         const text = await res.text();
-        try {
-          const data = JSON.parse(text);
-          throw new Error(data.error || "Generation failed");
-        } catch {
-          throw new Error(text || "Generation failed");
-        }
+        let errorMsg = "Generation failed";
+        try { errorMsg = JSON.parse(text).error || errorMsg; } catch { errorMsg = text || errorMsg; }
+        throw new Error(errorMsg);
       }
 
       const reader = res.body?.getReader();
