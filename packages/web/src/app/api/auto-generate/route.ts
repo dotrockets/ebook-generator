@@ -154,6 +154,7 @@ Respond ONLY with the Markdown content of this chapter.`;
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
+  console.log("[auto-generate] received body:", JSON.stringify(body));
   const {
     topic,
     pages = 20,
