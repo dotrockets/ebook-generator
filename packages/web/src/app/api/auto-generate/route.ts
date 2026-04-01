@@ -175,12 +175,13 @@ export async function POST(request: NextRequest) {
   };
 
   const VALID_PAGES = [5, 10, 15, 20, 30, 50];
-  const VALID_LANGS = ["de", "en"];
+  const VALID_LANGS = ["de", "en", "fr", "es"];
   const VALID_FORMATS = ["pdf", "epub", "docx"];
   const VALID_PAPERS = ["a4", "a5", "us-letter"];
 
-  if (!topic || typeof topic !== "string" || topic.length < 1 || topic.length > 500) {
-    return new Response(JSON.stringify({ error: "Topic must be 1-500 characters" }), {
+  const topicStr = (topic || "").toString().trim();
+  if (!topicStr || topicStr.length < 1 || topicStr.length > 500) {
+    return new Response(JSON.stringify({ error: "Bitte ein Thema eingeben (1-500 Zeichen)" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
