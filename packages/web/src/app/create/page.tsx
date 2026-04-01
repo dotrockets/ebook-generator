@@ -168,7 +168,7 @@ function CreatePageInner() {
       setAutoError("Zeitüberschreitung — die Generierung hat zu lange gedauert.");
       setAutoGenerating(false);
       setAutoStatus(null);
-    }, 10 * 60 * 1000);
+    }, 20 * 60 * 1000);
 
     try {
       const res = await fetch("/api/auto-generate", {

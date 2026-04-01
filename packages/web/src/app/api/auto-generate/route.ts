@@ -347,6 +347,7 @@ export async function POST(request: NextRequest) {
 
       for (let i = 0; i < outline.chapters.length; i++) {
         const chapter = outline.chapters[i];
+        console.log(`[auto-generate] chapter ${i + 1}/${outline.chapters.length}: ${chapter.title}`);
         await send("status", {
           step: "chapter",
           current: i + 1,
@@ -387,6 +388,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Step 3: Assemble markdown
+      console.log(`[auto-generate] all chapters done, assembling...`);
       await send("status", { step: "assemble", message: "Ebook wird zusammengefuegt..." });
 
       const escYaml = (s: string) => s.replace(/"/g, '\\"').replace(/\n/g, " ");
