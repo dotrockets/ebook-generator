@@ -161,6 +161,8 @@ export async function POST(request: NextRequest) {
     format = "pdf",
     template = "dark-ocean",
     paper = "a4",
+    pageWidth,
+    pageHeight,
   } = body as {
     topic: string;
     pages?: number;
@@ -168,6 +170,8 @@ export async function POST(request: NextRequest) {
     format?: string;
     template?: string;
     paper?: string;
+    pageWidth?: string;
+    pageHeight?: string;
   };
 
   const VALID_PAGES = [5, 10, 15, 20, 30, 50];
@@ -435,6 +439,8 @@ lang: ${lang}
         lang,
         template,
         paper,
+        ...(pageWidth ? { pageWidth } : {}),
+        ...(pageHeight ? { pageHeight } : {}),
         toc: true,
         tocDepth: 2,
         backPage: true,

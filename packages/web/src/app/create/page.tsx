@@ -82,6 +82,17 @@ function CreatePageInner() {
   const [autoLang, setAutoLang] = useState("de");
   const [autoTemplate, setAutoTemplate] = useState("dark-ocean");
   const [autoPaper, setAutoPaper] = useState("a4");
+  const [kdpTrim, setKdpTrim] = useState("6x9");
+
+  const KDP_TRIMS: Record<string, { w: string; h: string; label: string }> = {
+    "6x9": { w: "15.24cm", h: "22.86cm", label: '6×9" (Standard)' },
+    "5.5x8.5": { w: "13.97cm", h: "21.59cm", label: '5.5×8.5"' },
+    "5x8": { w: "12.7cm", h: "20.32cm", label: '5×8" (Kompakt)' },
+    "5.25x8": { w: "13.34cm", h: "20.32cm", label: '5.25×8"' },
+    "8.5x11": { w: "21.59cm", h: "27.94cm", label: '8.5×11" (Sachbuch)' },
+    "7x10": { w: "17.78cm", h: "25.4cm", label: '7×10" (Fachbuch)' },
+    "8x10": { w: "20.32cm", h: "25.4cm", label: '8×10" (Bildband)' },
+  };
   const [autoGenerating, setAutoGenerating] = useState(false);
   const [autoError, setAutoError] = useState<string | null>(null);
   const [autoStatus, setAutoStatus] = useState<string | null>(null);
@@ -182,6 +193,10 @@ function CreatePageInner() {
           format: autoFormat,
           template: autoTemplate,
           paper: autoPaper,
+          ...(autoTemplate === "kindle-kdp" && kdpTrim !== "6x9" ? {
+            pageWidth: KDP_TRIMS[kdpTrim].w,
+            pageHeight: KDP_TRIMS[kdpTrim].h,
+          } : {}),
         }),
       });
 
@@ -408,8 +423,26 @@ function CreatePageInner() {
                   <option value="dark-ocean">Dark Ocean</option>
                   <option value="clean-light">Clean Light</option>
                   <option value="print-ready">Print-Ready</option>
+                  <option value="kindle-kdp">Amazon KDP</option>
                 </select>
               </div>
+              {autoTemplate === "kindle-kdp" && (
+                <div className="flex-1">
+                  <label className="block text-xs text-text-2 mb-1.5 uppercase tracking-wider">
+                    Trimsize
+                  </label>
+                  <select
+                    value={kdpTrim}
+                    onChange={(e) => setKdpTrim(e.target.value)}
+                    disabled={autoGenerating}
+                    className="w-full bg-bg-3 border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-accent transition-colors"
+                  >
+                    {Object.entries(KDP_TRIMS).map(([key, t]) => (
+                      <option key={key} value={key}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="flex-1">
                 <label className="block text-xs text-text-2 mb-1.5 uppercase tracking-wider">
                   Sprache
