@@ -181,8 +181,8 @@ export async function POST(request: NextRequest) {
   const VALID_PAPERS = ["a4", "a5", "us-letter"];
 
   const topicStr = (topic || "").toString().trim();
-  if (!topicStr || topicStr.length < 1 || topicStr.length > 500) {
-    return new Response(JSON.stringify({ error: "Bitte ein Thema eingeben (1-500 Zeichen)" }), {
+  if (!topicStr) {
+    return new Response(JSON.stringify({ error: "Bitte ein Thema eingeben" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
