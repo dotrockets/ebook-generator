@@ -5,7 +5,7 @@ import { getEntry, loadFile } from "../store";
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id");
   const format = request.nextUrl.searchParams.get("format") || "pdf";
-  const VALID_FORMATS = ["pdf", "epub", "docx", "md", "cover"];
+  const VALID_FORMATS = ["pdf", "epub", "docx", "md", "cover", "cover-pdf"];
 
   if (!id) {
     return NextResponse.json({ error: "No id" }, { status: 400 });
@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
     epub: "application/epub+zip",
     docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     md: "text/markdown",
+    "cover-pdf": "application/pdf",
   };
 
   return new NextResponse(new Uint8Array(data), {

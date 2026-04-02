@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import Anthropic from "@anthropic-ai/sdk";
 import Replicate from "replicate";
-import { convert, type OutputFormat, type ConvertOptions } from "@ebook-gen/core";
+import { convert, generateCoverPdf, type OutputFormat, type ConvertOptions } from "@ebook-gen/core";
 import { addEntry, updateEntry, saveFile, type EbookEntry } from "../library/store";
 import { loadSettings } from "../settings/store";
 
@@ -311,7 +311,7 @@ export async function POST(request: NextRequest) {
         const replicate = new Replicate({ auth: replicateToken });
         coverPromise = (async () => {
           try {
-            const coverPrompt = `Professional book cover background, ${outline.coverImagePrompt}, high quality, no text, no letters, no words, clean composition, cinematic lighting, suitable as ebook cover background`;
+            const coverPrompt = `Stunning professional book cover background image. ${outline.coverImagePrompt}. Ultra high quality, 8K resolution, cinematic dramatic lighting, rich color palette, atmospheric depth of field. Absolutely NO text, NO letters, NO words, NO numbers, NO titles, NO watermarks anywhere in the image. Clean composition with visual weight in the upper two-thirds, leaving the lower third slightly darker and less busy for text overlay. Professional publishing quality, suitable for Amazon KDP print book cover at 300 DPI. Shot on Hasselblad, editorial photography style.`;
             console.log("[auto-generate] generating cover...");
             const output = await replicate.run("black-forest-labs/flux-1.1-pro", {
               input: {
@@ -419,6 +419,33 @@ lang: ${lang}
         console.log(`[auto-generate] cover: ${coverBuffer.length} bytes`);
       }
 
+      // Generate composed cover with typography overlay
+      const corePath = findCorePath();
+      const fontPath = join(corePath, "fonts");
+      let composedCoverPath: string | undefined;
+      if (coverBuffer && coverImagePath) {
+        try {
+          composedCoverPath = join(workDir, "cover-composed.pdf");
+          await generateCoverPdf({
+            backgroundImage: coverImagePath,
+            title: outline.title,
+            subtitle: outline.subtitle || undefined,
+            authors: [authorName],
+            publisher: settings.defaultPublisher || undefined,
+            accent: settings.accent || undefined,
+            headingFont: settings.headingFont || undefined,
+            bodyFont: settings.bodyFont || undefined,
+            fontPath,
+            output: composedCoverPath,
+          });
+          await send("status", { step: "cover_composed", message: "Cover mit Typografie erstellt..." });
+          console.log(`[auto-generate] composed cover generated`);
+        } catch (e) {
+          console.error("[auto-generate] composed cover failed:", e);
+          composedCoverPath = undefined;
+        }
+      }
+
       const inputPath = join(workDir, "content.md");
       await writeFile(inputPath, fullMarkdown, "utf-8");
 
@@ -426,9 +453,6 @@ lang: ${lang}
         .replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, "")
         .replace(/\s+/g, "-");
       const outputPath = join(workDir, `${slug}.${format}`);
-
-      const corePath = findCorePath();
-      const fontPath = join(corePath, "fonts");
 
       const options: ConvertOptions = {
         input: inputPath,
@@ -497,6 +521,10 @@ lang: ${lang}
       if (coverBuffer) {
         await saveFile(ebookId, "cover.webp", coverBuffer);
       }
+      if (composedCoverPath && existsSync(composedCoverPath)) {
+        const composedBuffer = await readFile(composedCoverPath);
+        await saveFile(ebookId, "cover-composed.pdf", composedBuffer);
+      }
 
       await updateEntry(ebookId, {
         title: outline.title,
@@ -508,6 +536,7 @@ lang: ${lang}
         outputFiles: {
           [format]: outFilename,
           ...(coverBuffer ? { cover: "cover.webp" } : {}),
+          ...(composedCoverPath && existsSync(composedCoverPath) ? { "cover-pdf": "cover-composed.pdf" } : {}),
         },
       });
 

@@ -1,4 +1,4 @@
-export { convert, convertAll } from "./convert.js";
+export { convert, convertAll, generateCoverPdf } from "./convert.js";
 export type {
   ConvertOptions,
   ConvertResult,

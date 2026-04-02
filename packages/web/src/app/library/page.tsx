@@ -451,6 +451,14 @@ export default function LibraryPage() {
                         MD
                       </a>
                     )}
+                    {ebook.status === "done" && ebook.outputFiles["cover-pdf"] && (
+                      <a
+                        href={`/api/library/download?id=${ebook.id}&format=cover-pdf`}
+                        className="bg-accent/10 hover:bg-accent/20 text-accent px-3 py-1.5 rounded-md text-[11px] font-semibold transition-colors"
+                      >
+                        Cover PDF
+                      </a>
+                    )}
                     {ebook.kdpMetadata && (
                       <button
                         onClick={() => setExpandedKdp(expandedKdp === ebook.id ? null : ebook.id)}

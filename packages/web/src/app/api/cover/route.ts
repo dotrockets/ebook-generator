@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const replicate = new Replicate({ auth: token });
 
     // Build the cover prompt — optimized for book covers
-    const coverPrompt = `Professional book cover background, ${imagePrompt}, high quality, no text, no letters, no words, clean composition, suitable as ebook cover background`;
+    const coverPrompt = `Stunning professional book cover background image. ${imagePrompt}. Ultra high quality, 8K resolution, cinematic dramatic lighting, rich color palette, atmospheric depth of field. Absolutely NO text, NO letters, NO words, NO numbers, NO titles, NO watermarks anywhere in the image. Clean composition with visual weight in the upper two-thirds, leaving the lower third slightly darker for text overlay. Professional publishing quality, editorial photography style.`;
 
     console.log("[cover] generating with Replicate...");
 

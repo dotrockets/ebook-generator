@@ -304,6 +304,76 @@ export async function convert(
   };
 }
 
+export async function generateCoverPdf(options: {
+  backgroundImage: string;
+  title: string;
+  subtitle?: string;
+  authors: string[];
+  publisher?: string;
+  accent?: string;
+  headingFont?: string;
+  bodyFont?: string;
+  pageWidth?: string;
+  pageHeight?: string;
+  fontPath?: string;
+  output: string;
+}): Promise<string> {
+  const coverTemplatePath = resolve(TEMPLATES_DIR, "cover", "cover.typ");
+  if (!existsSync(coverTemplatePath)) {
+    throw new Error("Cover template not found at " + coverTemplatePath);
+  }
+
+  // Create a minimal markdown file with frontmatter for Pandoc
+  const tempDir = dirname(resolve(options.output));
+  if (!existsSync(tempDir)) {
+    mkdirSync(tempDir, { recursive: true });
+  }
+  const tempMd = join(tempDir, "cover-input.md");
+  writeFileSync(tempMd, "---\n---\n", "utf-8");
+
+  const args: string[] = [
+    tempMd,
+    "--to=typst",
+    `--template=${coverTemplatePath}`,
+    "--pdf-engine=typst",
+    `--variable=title:${options.title}`,
+  ];
+
+  if (options.subtitle) args.push(`--variable=subtitle:${options.subtitle}`);
+  for (const author of options.authors) {
+    args.push(`--variable=authors:${author}`);
+  }
+  if (options.publisher) args.push(`--variable=publisher:${options.publisher}`);
+  if (options.accent) args.push(`--variable=accent:${options.accent}`);
+  if (options.headingFont) args.push(`--variable=heading-font:${options.headingFont}`);
+  if (options.bodyFont) args.push(`--variable=body-font:${options.bodyFont}`);
+  if (options.pageWidth) args.push(`--variable=page-width:${options.pageWidth}`);
+  if (options.pageHeight) args.push(`--variable=page-height:${options.pageHeight}`);
+
+  // Cover image path relative to temp markdown file
+  const coverRel = relative(tempDir, resolve(options.backgroundImage));
+  args.push(`--variable=cover-image:${coverRel}`);
+
+  args.push("-o", options.output);
+
+  // Font path
+  const fontPath = options.fontPath ?? (existsSync(BUNDLED_FONTS) ? BUNDLED_FONTS : null);
+  if (fontPath) {
+    args.push("--pdf-engine-opt=--font-path", `--pdf-engine-opt=${resolve(fontPath)}`);
+  }
+
+  try {
+    await execa("pandoc", args, { stdio: "pipe", cwd: tempDir });
+  } catch (err: unknown) {
+    const stderr = (err as { stderr?: string }).stderr;
+    throw new Error(`Cover generation failed: ${stderr || (err instanceof Error ? err.message : err)}`);
+  } finally {
+    try { unlinkSync(tempMd); } catch { /* ignore */ }
+  }
+
+  return options.output;
+}
+
 export async function convertAll(
   options: Omit<ConvertOptions, "output">,
   outputDir: string,
