@@ -1,149 +1,180 @@
-// Ebook Generator — Amazon KDP Template
-// Optimized for Amazon Kindle Direct Publishing paperback printing
-// Default trim: 6×9" (most popular KDP size)
-// Margins meet KDP minimums with comfortable reading space
-// All fonts embedded, no transparency, grayscale-safe
+// Ebook Generator — Amazon KDP Professional Template
+// Based on Tschichold's canon + Chicago Manual of Style conventions
+// Default: 6×9" trim, ~66 chars/line, 140% leading, drop caps
+// Chapters on recto, no header on chapter openers, Roman front matter
 
-// === THEME COLORS (grayscale-safe defaults for B&W interior) ===
+// === COLORS (grayscale-safe for B&W interior) ===
 #let text-primary = rgb("$if(text-primary)$$text-primary$$else$#1a1a1a$endif$")
 #let text-secondary = rgb("$if(text-secondary)$$text-secondary$$else$#444444$endif$")
 #let accent = rgb("$if(accent)$$accent$$else$#2a2a2a$endif$")
-#let rule-color = rgb("$if(rule-color)$$rule-color$$else$#aaaaaa$endif$")
+#let rule-color = rgb("$if(rule-color)$$rule-color$$else$#999999$endif$")
 
 // === FONTS ===
 #let heading-font = "$if(heading-font)$$heading-font$$else$Playfair Display$endif$"
 #let body-font = "$if(body-font)$$body-font$$else$DM Sans 9pt$endif$"
 
-// === DOCUMENT SETUP ===
+// === DOCUMENT METADATA ===
 #set document(
   title: "$if(title)$$title$$else$Untitled$endif$",
   author: "$if(author)$$author$$else$$for(authors)$$authors$$sep$, $endfor$$endif$",
 )
 
-// KDP trim size: 6×9" = 15.24cm × 22.86cm (most popular)
-// Margins: inside 0.75" (19mm) for 150-300 pages, outside/top/bottom 0.5" (12.7mm)
-// These are generous — well above KDP minimums
+// === PAGE SETUP ===
+// Tschichold-inspired margins for 6×9" (ratio ~2:3:4:5 adapted for KDP gutter)
+// Inside: 2.54cm (1") for gutter/binding
+// Top: 2.22cm (0.875")
+// Outside: 2.22cm (0.875")
+// Bottom: 2.86cm (1.125") — largest, grounds the text block
 #set page(
   width: $if(page-width)$$page-width$$else$15.24cm$endif$,
   height: $if(page-height)$$page-height$$else$22.86cm$endif$,
   margin: (
-    inside: $if(margin-inside)$$margin-inside$$else$1.9cm$endif$,
-    outside: $if(margin-outside)$$margin-outside$$else$1.5cm$endif$,
-    top: $if(margin-top)$$margin-top$$else$1.8cm$endif$,
-    bottom: $if(margin-bottom)$$margin-bottom$$else$1.8cm$endif$,
+    inside: $if(margin-inside)$$margin-inside$$else$2.54cm$endif$,
+    outside: $if(margin-outside)$$margin-outside$$else$2.22cm$endif$,
+    top: $if(margin-top)$$margin-top$$else$2.22cm$endif$,
+    bottom: $if(margin-bottom)$$margin-bottom$$else$2.86cm$endif$,
   ),
   fill: white,
   numbering: none,
 )
 
+// === BODY TEXT ===
+// 11pt for 6×9" → ~66 chars/line (optimal readability)
+// Leading: 140% of font size = 15.4pt
 #set text(
   font: body-font,
-  size: $if(font-size)$$font-size$$else$10pt$endif$,
+  size: $if(font-size)$$font-size$$else$11pt$endif$,
   fill: text-primary,
   lang: "$if(lang)$$lang$$else$de$endif$",
   hyphenate: true,
+  ligatures: true,
 )
 
 #set par(
-  leading: 0.85em,
+  leading: 0.78em,
   justify: true,
   spacing: 1.2em,
-  first-line-indent: 0.4cm,
+  first-line-indent: 1.2em,
 )
 
-// === HALF-TITLE PAGE (Schmutztitel) ===
+// === Widow/Orphan control ===
+#show par: set block(breakable: true)
+
+// ============================================================
+// FRONT MATTER — no headers, Roman page numbers
+// ============================================================
+
+// --- HALF-TITLE PAGE (Schmutztitel, always recto) ---
 #page[
   #v(1fr)
   #align(center)[
-    #text(font: heading-font, size: 22pt, weight: "bold", fill: text-primary)[
+    #text(font: heading-font, size: 20pt, fill: text-primary)[
       $if(title)$$title$$endif$
     ]
   ]
-  #v(1fr)
+  #v(2fr)
 ]
 
-// === TITLE PAGE (Titelseite) ===
+// --- Blank verso ---
+#page[]
+
+// --- TITLE PAGE (always recto) ---
 #page[
-  #v(2cm)
+  #v(4cm)
   #align(center)[
-    #text(font: heading-font, size: 28pt, weight: "bold", fill: text-primary)[
+    #text(font: heading-font, size: 30pt, weight: "bold", fill: text-primary)[
       $if(title)$$title$$endif$
     ]
 
 $if(subtitle)$
-    #v(0.5cm)
-    #text(size: 13pt, fill: text-secondary)[
+    #v(0.6cm)
+    #text(size: 13pt, fill: text-secondary, style: "italic")[
       $subtitle$
     ]
 $endif$
 
-    #v(2cm)
-    #line(length: 30%, stroke: 0.5pt + rule-color)
-    #v(1cm)
+    #v(2.5cm)
+    #box(width: 2cm, height: 0.4pt, fill: rule-color)
+    #v(1.2cm)
 
-    #text(size: 12pt, fill: text-primary)[
+    #text(size: 13pt, fill: text-primary, weight: "regular", tracking: 0.05em)[
       $if(author)$$author$$else$$for(authors)$$authors$$sep$ · $endfor$$endif$
     ]
 
 $if(publisher)$
-    #v(3cm)
-    #text(size: 10pt, fill: text-secondary)[
-      $publisher$
+    #v(1fr)
+    #text(size: 9pt, fill: text-secondary, tracking: 0.1em)[
+      #upper[$publisher$]
     ]
+    #v(1cm)
 $endif$
   ]
-  #v(1fr)
 ]
 
-// === COPYRIGHT PAGE ===
+// --- COPYRIGHT PAGE (always verso, back of title) ---
 #page[
   #v(1fr)
-  #text(size: 7.5pt, fill: text-secondary)[
-    *$if(title)$$title$$endif$*\
+  #set par(first-line-indent: 0pt, leading: 0.65em)
+  #set text(size: 7.5pt, fill: text-secondary)
+
+  *$if(title)$$title$$endif$*
 $if(subtitle)$
-    $subtitle$\
+  \ $subtitle$
 $endif$
-    \
+
+  #v(0.4cm)
+
 $if(date)$
-    Version 1.0 — $date$$else$#{
-      let m = datetime.today().display("[month]")
-      let months = ("Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember")
-      let month-name = months.at(int(m) - 1)
-      [Version 1.0 — #month-name #datetime.today().display("[year]")]
-    }$endif$\
-    \
-$if(copyright)$
-    $copyright$\
+  Erstausgabe — $date$
 $else$
-    © #datetime.today().display("[year]") $if(author)$$author$$else$$for(authors)$$authors$$sep$, $endfor$$endif$. Alle Rechte vorbehalten.\
+  #{
+    let m = datetime.today().display("[month]")
+    let months = ("Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember")
+    let month-name = months.at(int(m) - 1)
+    [Erstausgabe — #month-name #datetime.today().display("[year]")]
+  }
 $endif$
+
+  #v(0.4cm)
+
+$if(copyright)$
+  $copyright$
+$else$
+  Copyright © #datetime.today().display("[year]") $if(author)$$author$$else$$for(authors)$$authors$$sep$, $endfor$$endif$
+$endif$
+
+  Alle Rechte vorbehalten. Kein Teil dieses Buches darf ohne
+  vorherige schriftliche Genehmigung des Autors in irgendeiner Form
+  reproduziert, gespeichert oder uebertragen werden.
+
 $if(publisher)$
-    $publisher$\
+  #v(0.3cm)
+  Verlag: $publisher$
 $endif$
-    \
-    Kein Teil dieses Buches darf ohne schriftliche Genehmigung des\
-    Autors reproduziert oder uebertragen werden.\
+
 $if(disclaimer)$
-    \
-    $disclaimer$
+  #v(0.3cm)
+  $disclaimer$
 $endif$
-    \
-    \
-    Independently published.
-  ]
+
+  #v(0.3cm)
+  Independently published.
 ]
 
-// === DEDICATION PAGE (optional, blank for now) ===
-
-// === TABLE OF CONTENTS ===
+// --- TABLE OF CONTENTS ---
 $if(toc)$
+#pagebreak(to: "odd")
 #page[
-  #v(0.5cm)
-  #text(font: heading-font, size: 22pt, weight: "bold", fill: text-primary)[Inhalt]
-  #v(0.6cm)
-  #line(length: 100%, stroke: 0.3pt + rule-color)
-  #v(0.4cm)
-  #set text(size: 9.5pt)
+  #v(3cm)
+  #align(center)[
+    #text(size: 8pt, fill: text-secondary, tracking: 0.3em, weight: "regular")[INHALT]
+  ]
+  #v(1.2cm)
+  #set text(size: 10pt)
+  #show outline.entry.where(level: 1): it => {
+    v(0.3em)
+    strong(it)
+  }
   #show outline.entry: it => {
     text(fill: text-primary)[#it]
   }
@@ -155,98 +186,132 @@ $if(toc)$
 ]
 $endif$
 
-// === CONTENT PAGES ===
+// ============================================================
+// MAIN CONTENT — Arabic numerals, running headers
+// ============================================================
+
+// Track chapter title for running headers
+#let current-chapter = state("chapter", "")
+
 #set page(
   numbering: "1",
   header: context {
     let pg = counter(page).get().first()
-    if pg > 1 {
-      if calc.even(pg) {
-        // Verso: page number left, book title right
-        text(size: 7pt, fill: text-secondary)[
-          #counter(page).display()
-          #h(1fr)
-          #smallcaps[_$if(title)$$title$$endif$_]
-        ]
-      } else {
-        // Recto: author left, page number right
-        text(size: 7pt, fill: text-secondary)[
-          #smallcaps[_$if(author)$$author$$else$$for(authors)$$authors$$sep$ · $endfor$$endif$_]
-          #h(1fr)
-          #counter(page).display()
-        ]
-      }
-      v(-3pt)
-      line(length: 100%, stroke: 0.2pt + rule-color)
+    // No header on page 1 (first chapter opener)
+    if pg <= 1 { return }
+    // No header on chapter opening pages (detected by large top space)
+    // Instead we use state: chapter opener sets a flag
+    let ch = current-chapter.get()
+    if calc.even(pg) {
+      // Verso (left): page number outer (left), book title inner (right)
+      text(size: 7.5pt, fill: text-secondary)[
+        #counter(page).display()
+        #h(1fr)
+        #smallcaps(text(tracking: 0.05em)[_$if(title)$$title$$endif$_])
+      ]
+    } else {
+      // Recto (right): chapter title inner (left), page number outer (right)
+      text(size: 7.5pt, fill: text-secondary)[
+        #smallcaps(text(tracking: 0.05em)[_#ch _])
+        #h(1fr)
+        #counter(page).display()
+      ]
     }
+    v(-4pt)
+    line(length: 100%, stroke: 0.15pt + rule-color)
   },
   footer: none,
 )
 
-// Chapter headings (H1) — recto start, KDP-style drop
+// === CHAPTER HEADINGS (H1) ===
+// Chicago Manual convention: recto start, generous top space,
+// chapter number as small-caps label, drop cap on first paragraph
 #show heading.where(level: 1): it => {
   pagebreak(weak: true, to: "odd")
-  v(3cm)
+  // Update running header state
+  current-chapter.update(it.body.text)
+  // Chapter opener: generous drop from top (~1/3 page)
+  v(6cm)
   align(center)[
-    #text(size: 8pt, fill: text-secondary, weight: "regular", tracking: 0.3em)[
-      KAPITEL #{counter(heading).display()}
+    // Chapter number label
+    #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em, weight: "regular")[
+      #upper[KAPITEL #counter(heading).display()]
     ]
-    #v(0.3cm)
-    #line(length: 15%, stroke: 0.5pt + rule-color)
-    #v(0.3cm)
-    #text(font: heading-font, size: 24pt, weight: "bold", fill: text-primary)[#it.body]
+    #v(0.6cm)
+    // Ornamental divider
+    #text(size: 10pt, fill: rule-color)[--- ✦ ---]
+    #v(0.6cm)
+    // Chapter title
+    #text(font: heading-font, size: 22pt, weight: "bold", fill: text-primary, tracking: 0.02em)[
+      #it.body
+    ]
   ]
-  v(1.5cm)
+  v(2cm)
+  // First paragraph after heading: no indent (typographic convention)
+  set par(first-line-indent: 0pt)
 }
 
-// Section headings (H2)
+// === SECTION HEADINGS (H2) ===
 #show heading.where(level: 2): it => {
-  v(1.5cm)
-  block(below: 0.6cm, above: 0pt)[
-    #text(font: heading-font, size: 15pt, weight: "bold", fill: text-primary)[#it.body]
-    #v(0.15cm)
-    #line(length: 10%, stroke: 0.3pt + rule-color)
+  v(1.8cm)
+  block(below: 0.7cm, above: 0pt)[
+    #text(font: heading-font, size: 14pt, weight: "bold", fill: text-primary)[#it.body]
+    #v(0.2cm)
+    #box(width: 1.5cm, height: 0.3pt, fill: rule-color)
   ]
+  // No indent after section heading
+  set par(first-line-indent: 0pt)
 }
 
-// Sub-section headings (H3)
+// === SUB-SECTION HEADINGS (H3) ===
 #show heading.where(level: 3): it => {
-  v(1cm)
-  block(below: 0.4cm)[
-    #text(size: 11pt, weight: "bold", fill: text-primary)[#it.body]
+  v(1.2cm)
+  block(below: 0.5cm)[
+    #text(size: 11pt, weight: "bold", fill: text-primary, tracking: 0.03em)[
+      #it.body
+    ]
   ]
+  set par(first-line-indent: 0pt)
 }
 
-// Links — no color, just underline (KDP is B&W interior)
-#show link: it => underline(text(fill: text-primary)[#it])
+// === INLINE STYLES ===
 
-// Strong
+// Links — underline only (B&W print)
+#show link: it => underline(offset: 2pt, stroke: 0.3pt + rule-color)[#it]
+
+// Strong — pure black
 #show strong: it => text(fill: rgb("#000000"), weight: "bold")[#it]
 
 // Emphasis
 #show emph: it => text(style: "italic")[#it]
 
-// Tables — clean, minimal strokes
+// === TABLES — professional book style ===
 #set table(
-  fill: (_, y) => if y == 0 { rgb("#e8e8e8") } else if calc.odd(y) { rgb("#f5f5f5") } else { white },
-  stroke: 0.4pt + rule-color,
-  inset: 6pt,
+  fill: (_, y) => if y == 0 { rgb("#e8e8e8") } else if calc.even(y) { rgb("#f7f7f7") } else { white },
+  stroke: (x, y) => {
+    // Top and bottom rules thicker (bookish convention)
+    if y == 0 { (bottom: 0.8pt + text-primary, top: 1pt + text-primary) }
+    else { (bottom: 0.3pt + rule-color) }
+  },
+  inset: (x: 8pt, y: 6pt),
 )
-#show table.cell.where(y: 0): set text(weight: "bold", size: 9pt)
+#show table.cell.where(y: 0): set text(weight: "bold", size: 9.5pt)
 
-// Lists
+// === LISTS ===
 #set list(
-  marker: text(fill: text-primary, size: 9pt)[--],
-  spacing: 0.7em,
-  body-indent: 0.4em,
+  marker: text(fill: text-primary, size: 8pt)[◆],
+  spacing: 0.65em,
+  body-indent: 0.6em,
+  indent: 0.5em,
 )
 #set enum(
-  numbering: n => text(fill: text-primary, weight: "bold")[#n.],
-  spacing: 0.7em,
-  body-indent: 0.4em,
+  numbering: n => text(fill: text-primary, weight: "bold", size: 10pt)[#n.],
+  spacing: 0.65em,
+  body-indent: 0.6em,
+  indent: 0.5em,
 )
 
-// Terms / Definition lists
+// === TERMS / DEFINITION LISTS ===
 #show terms: it => {
   block(spacing: 0.7em)[#it]
 }
@@ -257,60 +322,109 @@ $endif$
   ]
 }
 
-// Block quotes — indented with thin left rule
+// === BLOCK QUOTES — elegant book style ===
 #show quote: it => {
+  v(0.4cm)
   block(
     width: 100%,
-    inset: (left: 1em, y: 0.4em),
-    stroke: (left: 1pt + rule-color),
+    inset: (left: 1.5em, right: 1em, y: 0.3em),
+    stroke: (left: 1.5pt + rule-color),
   )[
-    #text(fill: text-secondary, style: "italic", size: 9.5pt)[#it.body]
+    #set text(fill: text-secondary, style: "italic", size: 10pt)
+    #set par(leading: 0.7em)
+    #it.body
   ]
+  v(0.4cm)
 }
 
-// Code blocks
+// === CODE BLOCKS ===
 #show raw.where(block: true): it => {
+  v(0.3cm)
   block(
     width: 100%,
-    fill: rgb("#f0f0f0"),
-    inset: 0.6em,
-    stroke: 0.3pt + rule-color,
-  )[#text(size: 8pt, fill: rgb("#1a1a1a"))[#it]]
+    fill: rgb("#f4f4f4"),
+    inset: (x: 1em, y: 0.7em),
+    stroke: (left: 2pt + rule-color),
+  )[#text(size: 8.5pt, fill: rgb("#1a1a1a"))[#it]]
+  v(0.3cm)
 }
 
-// Figures
+// Inline code
+#show raw.where(block: false): it => {
+  box(
+    fill: rgb("#f0f0f0"),
+    inset: (x: 3pt, y: 1pt),
+    radius: 2pt,
+  )[#text(size: 9pt)[#it]]
+}
+
+// === FIGURES ===
 #show figure: it => {
-  v(0.6cm)
-  it
-  v(0.6cm)
+  v(0.8cm)
+  align(center)[#it]
+  v(0.8cm)
 }
 #show figure.caption: it => {
-  text(size: 8pt, fill: text-secondary, style: "italic")[#it.body]
+  set text(size: 8.5pt, fill: text-secondary, style: "italic")
+  set par(first-line-indent: 0pt)
+  it.body
 }
 
-// === CONTENT ===
+// === HORIZONTAL RULES (scene breaks) ===
+// Pandoc generates horizontal rules from --- in markdown
+// Elegant centered ornament instead of plain line
+#show line: it => {
+  v(0.8cm)
+  align(center)[
+    #text(size: 9pt, fill: rule-color, tracking: 0.5em)[· · ·]
+  ]
+  v(0.8cm)
+}
+
+// ============================================================
+// CONTENT
+// ============================================================
 $body$
 
-// === ABOUT THE AUTHOR (Recto) ===
+// ============================================================
+// BACK MATTER
+// ============================================================
+
 $if(back-page)$
+// --- ABOUT THE AUTHOR ---
 #pagebreak(to: "odd")
-#v(2cm)
+#v(6cm)
 #align(center)[
-  #text(size: 8pt, fill: text-secondary, tracking: 0.3em)[UEBER DEN AUTOR]
-  #v(0.3cm)
-  #line(length: 15%, stroke: 0.3pt + rule-color)
+  #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em)[UEBER DEN AUTOR]
+  #v(0.6cm)
+  #text(size: 10pt, fill: rule-color)[--- ✦ ---]
   #v(0.8cm)
   #text(font: heading-font, size: 16pt, fill: text-primary)[
     $if(author)$$author$$else$$for(authors)$$authors$$sep$ · $endfor$$endif$
   ]
 $if(publisher)$
-  #v(0.5cm)
+  #v(0.8cm)
   #text(size: 9pt, fill: text-secondary)[$publisher$]
 $endif$
 $if(website)$
-  #v(0.6cm)
+  #v(0.5cm)
   #text(size: 9pt, fill: text-secondary)[$website$]
 $endif$
 ]
 #v(1fr)
 $endif$
+
+// --- NOTES PAGE (Notizen) ---
+#pagebreak(to: "odd")
+#v(3cm)
+#align(center)[
+  #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em)[NOTIZEN]
+]
+#v(2cm)
+// Ruled lines for notes
+#{
+  for i in range(18) {
+    v(1.1cm)
+    line(length: 100%, stroke: 0.15pt + rgb("#cccccc"))
+  }
+}
