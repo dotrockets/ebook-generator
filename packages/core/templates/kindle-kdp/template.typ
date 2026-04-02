@@ -191,7 +191,7 @@ $endif$
 // ============================================================
 
 // Track chapter title for running headers
-#let current-chapter = state("chapter", "")
+#let current-chapter = state("chapter", [])
 
 #set page(
   numbering: "1",
@@ -229,7 +229,7 @@ $endif$
 #show heading.where(level: 1): it => {
   pagebreak(weak: true, to: "odd")
   // Update running header state
-  current-chapter.update(it.body.text)
+  current-chapter.update(it.body)
   // Chapter opener: generous drop from top (~1/3 page)
   v(6cm)
   align(center)[

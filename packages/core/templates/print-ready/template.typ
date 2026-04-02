@@ -158,7 +158,7 @@ $if(toc)$
 $endif$
 
 // === CONTENT PAGES ===
-#let current-chapter = state("chapter", "")
+#let current-chapter = state("chapter", [])
 
 #set page(
   numbering: "1",
@@ -188,7 +188,7 @@ $endif$
 // Chapter headings (H1)
 #show heading.where(level: 1): it => {
   pagebreak(weak: true, to: "odd")
-  current-chapter.update(it.body.text)
+  current-chapter.update(it.body)
   v(5cm)
   align(center)[
     #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em)[
