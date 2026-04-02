@@ -517,9 +517,12 @@ lang: ${lang}
       if (template === "kindle-kdp") {
         try {
           await send("status", { step: "kdp", message: "KDP-Metadaten werden erstellt..." });
+          const estimatedPages = Math.round(totalWords / 250);
+          const spineWidthMm = (estimatedPages * 0.0572).toFixed(1);
+
           const kdpRes = await anthropic.messages.create({
             model: "claude-sonnet-4-20250514",
-            max_tokens: 3000,
+            max_tokens: 5000,
             messages: [{
               role: "user",
               content: `Du bist ein Amazon KDP Publishing-Experte. Erstelle Metadaten fuer:
@@ -527,6 +530,11 @@ Titel: "${outline.title}"
 Untertitel: "${outline.subtitle || ""}"
 Thema: "${topic}"
 Kapitel: ${outline.chapters.map((c) => c.title).join(", ")}
+Geschaetzte Woerter: ${totalWords}
+Geschaetzte Seiten: ${estimatedPages}
+
+Rueckenbreite-Formel: Seiten × 0.0572mm (weisses Papier) oder Seiten × 0.0635mm (cremefarbenes Papier).
+Fuer dieses Buch (weisses Papier, ${estimatedPages} Seiten): ca. ${spineWidthMm} mm.
 
 Antworte NUR mit JSON:
 {
@@ -535,9 +543,33 @@ Antworte NUR mit JSON:
   "categories": [{"name":"Kategorie","path":"Books > ..."},{"name":"Kategorie2","path":"Books > ..."},{"name":"Kategorie3","path":"Books > ..."}],
   "pricing": {"recommendedEUR":9.99,"recommendedUSD":12.99,"reasoning":"Begruendung"},
   "searchTitle": "SEO-optimierter Amazon-Titel",
-  "searchSubtitle": "SEO-optimierter Untertitel mit Keywords"
+  "searchSubtitle": "SEO-optimierter Untertitel mit Keywords",
+  "preflight": {
+    "trimSize": "6×9 in (15.24 × 22.86 cm)",
+    "interiorColor": "Schwarz-Weiss oder Standardfarbe (je nach Inhalt)",
+    "paperType": "Weiss oder Creme (je nach Genre)",
+    "bleed": "Kein Anschnitt oder Mit Anschnitt (je nach Bildern)",
+    "spineWidth": "X mm (basierend auf ~Y Seiten) — berechne mit Formel oben",
+    "coverDimensions": "Breite: X cm × Hoehe: Y cm (inkl. Anschnitt + Ruecken) — abhaengig von trimSize und spineWidth",
+    "checklist": [
+      "PDF mit eingebetteten Schriften",
+      "Alle Bilder mind. 300 DPI",
+      "Margins ueber KDP-Minimum",
+      "Titel auf Cover = Titel in Metadaten",
+      "AI-Inhalt bei KDP angeben",
+      "Korrekturexemplar bestellen vor Veroeffentlichung"
+    ]
+  },
+  "socialMedia": {
+    "instagram": "Kurzer Instagram-Post-Text mit Emojis und Hashtags (max 2200 Zeichen)",
+    "twitter": "Tweet-Text (max 280 Zeichen)",
+    "facebook": "Facebook-Post (3-5 Saetze, engaging)",
+    "amazonDescription": "Kurzversion der Beschreibung fuer Social Media Teilen (2-3 Saetze)"
+  }
 }
-Keywords: 7x, max 50 Zeichen, 2-3 Woerter. Preis: min 9.99 EUR (60% Royalty).`,
+Keywords: 7x, max 50 Zeichen, 2-3 Woerter. Preis: min 9.99 EUR (60% Royalty).
+preflight: Fuelle die Werte konkret fuer dieses Buch aus (spineWidth: ${spineWidthMm} mm fuer ${estimatedPages} Seiten weisses Papier). Berechne coverDimensions basierend auf trimSize + spineWidth + 3.2mm Anschnitt pro Seite.
+socialMedia: Erstelle echte, sofort nutzbare Social-Media-Texte auf Deutsch. Instagram mit Emojis und relevanten Hashtags. Twitter kurz und praegnant. Facebook engaging mit Call-to-Action.`,
             }],
           });
           const kdpText = kdpRes.content[0].type === "text" ? kdpRes.content[0].text : "";

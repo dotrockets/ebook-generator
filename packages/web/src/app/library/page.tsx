@@ -27,6 +27,21 @@ interface EbookEntry {
     pricing: { recommendedEUR: number; recommendedUSD: number; reasoning: string };
     searchTitle: string;
     searchSubtitle: string;
+    preflight?: {
+      trimSize: string;
+      interiorColor: string;
+      paperType: string;
+      bleed: string;
+      spineWidth: string;
+      coverDimensions: string;
+      checklist: string[];
+    };
+    socialMedia?: {
+      instagram: string;
+      twitter: string;
+      facebook: string;
+      amazonDescription: string;
+    };
   };
 }
 
@@ -159,6 +174,57 @@ function KdpPanel({ ebook }: { ebook: EbookEntry }) {
         <span className="text-text font-semibold">{kdp.pricing.recommendedUSD.toFixed(2)} USD</span>
         <span className="text-[10px] text-accent">60% Royalty</span>
       </div>
+
+      {/* Pre-Flight */}
+      {kdp.preflight && (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] text-text-3 uppercase tracking-wider">Pre-Flight Check</span>
+          </div>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] mb-2">
+            <span className="text-text-3">Trimsize:</span>
+            <span className="text-text">{kdp.preflight.trimSize}</span>
+            <span className="text-text-3">Interior:</span>
+            <span className="text-text">{kdp.preflight.interiorColor}</span>
+            <span className="text-text-3">Papier:</span>
+            <span className="text-text">{kdp.preflight.paperType}</span>
+            <span className="text-text-3">Rueckenbreite:</span>
+            <span className="text-text">{kdp.preflight.spineWidth}</span>
+            <span className="text-text-3">Cover-Mass:</span>
+            <span className="text-text">{kdp.preflight.coverDimensions}</span>
+          </div>
+          <div className="space-y-1">
+            {kdp.preflight.checklist.map((item: string, i: number) => (
+              <div key={i} className="flex items-start gap-1.5 text-[10px] text-text-2">
+                <span className="text-accent mt-0.5">☐</span>
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Social Media */}
+      {kdp.socialMedia && (
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] text-text-3 uppercase tracking-wider">Social Media Posts</span>
+          </div>
+          <div className="space-y-2">
+            {[
+              { label: "Instagram", text: kdp.socialMedia.instagram },
+              { label: "Twitter/X", text: kdp.socialMedia.twitter },
+              { label: "Facebook", text: kdp.socialMedia.facebook },
+            ].map(({ label, text }) => (
+              <div key={label} className="flex items-start gap-2">
+                <span className="text-[10px] text-text-3 w-16 shrink-0">{label}</span>
+                <p className="text-[10px] text-text-2 flex-1">{text}</p>
+                <CopyButton text={text} label="Copy" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* AI Disclosure */}
       <div className="text-[10px] text-text-3 italic border-t border-border pt-2">

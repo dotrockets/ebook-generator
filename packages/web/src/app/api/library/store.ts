@@ -32,6 +32,21 @@ export interface EbookEntry {
     pricing: { recommendedEUR: number; recommendedUSD: number; reasoning: string };
     searchTitle: string;
     searchSubtitle: string;
+    preflight?: {
+      trimSize: string;
+      interiorColor: string;
+      paperType: string;
+      bleed: string;
+      spineWidth: string;
+      coverDimensions: string;
+      checklist: string[];
+    };
+    socialMedia?: {
+      instagram: string;
+      twitter: string;
+      facebook: string;
+      amazonDescription: string;
+    };
   };
   createdAt: string;
   updatedAt: string;

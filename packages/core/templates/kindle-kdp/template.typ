@@ -390,6 +390,75 @@ $body$
 // BACK MATTER
 // ============================================================
 
+// --- REVIEW REQUEST PAGE ---
+#pagebreak(to: "odd")
+#v(5cm)
+#align(center)[
+  #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em)[HAT IHNEN DIESES BUCH GEFALLEN?]
+  #v(0.6cm)
+  #text(size: 10pt, fill: rule-color)[--- ✦ ---]
+  #v(1cm)
+  #text(font: heading-font, size: 16pt, fill: text-primary)[
+    Ihre Meinung zaehlt!
+  ]
+  #v(1cm)
+  #set par(first-line-indent: 0pt, justify: false)
+  #block(width: 80%)[
+    #set text(size: 10pt, fill: text-secondary)
+    #align(center)[
+      Ehrliche Rezensionen helfen anderen Lesern, dieses Buch zu entdecken.
+      Wenn Ihnen _$if(title)$$title$$endif$_ gefallen hat,
+      wuerden wir uns sehr ueber eine kurze Bewertung auf Amazon freuen.
+
+      #v(0.8cm)
+      Schon ein oder zwei Saetze machen einen grossen Unterschied.
+
+      #v(1.2cm)
+      #text(size: 9pt, fill: rule-color)[Vielen Dank fuer Ihre Unterstuetzung!]
+    ]
+  ]
+]
+#v(1fr)
+
+// --- BONUS CONTENT PAGE ---
+#pagebreak()
+#v(5cm)
+#align(center)[
+  #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em)[EXKLUSIVES BONUSMATERIAL]
+  #v(0.6cm)
+  #text(size: 10pt, fill: rule-color)[--- ✦ ---]
+  #v(1cm)
+  #text(font: heading-font, size: 16pt, fill: text-primary)[
+    Gratis fuer Sie
+  ]
+  #v(1cm)
+  #set par(first-line-indent: 0pt, justify: false)
+  #block(width: 80%)[
+    #set text(size: 10pt, fill: text-secondary)
+    #align(center)[
+      Als Dankeschoen fuer den Kauf dieses Buches erhalten Sie
+      kostenloses Bonusmaterial:
+
+      #v(0.6cm)
+      #set text(size: 10.5pt, fill: text-primary)
+      ◆ Zusammenfassung aller Kernaussagen \
+      ◆ Praktische Checklisten zum Ausdrucken \
+      ◆ Exklusive Tipps und Updates
+
+      #v(1cm)
+      #set text(size: 9pt, fill: text-secondary)
+      $if(website)$
+      Besuchen Sie *$website$* und geben Sie \
+      den Code *LESER2026* ein.
+      $else$
+      Scannen Sie den QR-Code oder besuchen Sie \
+      die Website des Autors fuer den Download.
+      $endif$
+    ]
+  ]
+]
+#v(1fr)
+
 $if(back-page)$
 // --- ABOUT THE AUTHOR ---
 #pagebreak(to: "odd")
