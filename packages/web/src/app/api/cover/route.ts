@@ -41,28 +41,22 @@ export async function POST(request: NextRequest) {
 
     const aspectRatio = style === "landscape" ? "16:9" : style === "square" ? "1:1" : "9:16";
 
-    const output = await replicate.run("black-forest-labs/flux-schnell", {
+    const output = await replicate.run("black-forest-labs/flux-1.1-pro", {
       input: {
         prompt: coverPrompt,
-        num_outputs: 1,
         aspect_ratio: aspectRatio,
         output_format: "webp",
-        output_quality: 90,
+        output_quality: 95,
+        safety_tolerance: 5,
       },
     });
 
-    // output is an array of URLs or ReadableStreams
-    const results = output as Array<unknown>;
-    if (!results || results.length === 0) {
-      throw new Error("No image generated");
-    }
-
-    const imageResult = results[0];
+    // flux-1.1-pro returns a single URL string or ReadableStream (not an array)
+    const result = output;
     let imageBuffer: Buffer;
 
-    if (imageResult instanceof ReadableStream) {
-      // Handle ReadableStream
-      const reader = imageResult.getReader();
+    if (result instanceof ReadableStream) {
+      const reader = result.getReader();
       const chunks: Uint8Array[] = [];
       while (true) {
         const { done, value } = await reader.read();
@@ -70,9 +64,8 @@ export async function POST(request: NextRequest) {
         chunks.push(value);
       }
       imageBuffer = Buffer.concat(chunks);
-    } else if (typeof imageResult === "string") {
-      // Handle URL
-      const imgRes = await fetch(imageResult);
+    } else if (typeof result === "string") {
+      const imgRes = await fetch(result);
       imageBuffer = Buffer.from(await imgRes.arrayBuffer());
     } else {
       throw new Error("Unexpected output format from Replicate");

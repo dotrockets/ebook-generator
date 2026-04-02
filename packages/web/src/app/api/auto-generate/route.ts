@@ -313,32 +313,31 @@ export async function POST(request: NextRequest) {
           try {
             const coverPrompt = `Professional book cover background, ${outline.coverImagePrompt}, high quality, no text, no letters, no words, clean composition, cinematic lighting, suitable as ebook cover background`;
             console.log("[auto-generate] generating cover...");
-            const output = await replicate.run("black-forest-labs/flux-schnell", {
+            const output = await replicate.run("black-forest-labs/flux-1.1-pro", {
               input: {
                 prompt: coverPrompt,
-                num_outputs: 1,
                 aspect_ratio: "9:16",
                 output_format: "webp",
-                output_quality: 90,
+                output_quality: 95,
+                safety_tolerance: 5,
               },
             });
-            const results = output as Array<unknown>;
-            if (!results?.length) return null;
-            const img = results[0];
-            if (img instanceof ReadableStream) {
-              const reader = img.getReader();
+            const result = output;
+            let imageBuffer: Buffer | null = null;
+            if (result instanceof ReadableStream) {
+              const reader = result.getReader();
               const chunks: Uint8Array[] = [];
               while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
                 chunks.push(value);
               }
-              return Buffer.concat(chunks);
-            } else if (typeof img === "string") {
-              const res = await fetch(img);
-              return Buffer.from(await res.arrayBuffer());
+              imageBuffer = Buffer.concat(chunks);
+            } else if (typeof result === "string") {
+              const res = await fetch(result);
+              imageBuffer = Buffer.from(await res.arrayBuffer());
             }
-            return null;
+            return imageBuffer;
           } catch (e) {
             console.error("[auto-generate] cover generation failed:", e);
             return null;
