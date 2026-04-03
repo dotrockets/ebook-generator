@@ -25,7 +25,7 @@ function findCorePath(): string {
 // POST /api/library/export — re-export an ebook in a different format
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { id, format } = body as { id: string; format: string };
+  const { id, format, template } = body as { id: string; format: string; template?: string };
 
   const VALID_FORMATS = ["pdf", "epub", "docx"];
   if (!id || !format) {
@@ -89,8 +89,9 @@ export async function POST(request: NextRequest) {
       subtitle: entry.subtitle || undefined,
       authors: entry.authors,
       lang: entry.lang,
-      template: "dark-ocean",
+      template: template || entry.template || "dark-ocean",
       paper: "a4",
+      ...(template === "kindle-kdp" ? { pageWidth: "15.24cm", pageHeight: "22.86cm" } : {}),
       toc: true,
       tocDepth: 2,
       backPage: true,

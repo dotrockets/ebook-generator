@@ -240,6 +240,7 @@ export default function LibraryPage() {
   const [ebooks, setEbooks] = useState<EbookEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState<Record<string, string>>({});
+  const [exportTemplate, setExportTemplate] = useState<Record<string, string>>({});
   const [expandedKdp, setExpandedKdp] = useState<string | null>(null);
 
   useEffect(() => {
@@ -253,6 +254,7 @@ export default function LibraryPage() {
   }, []);
 
   async function handleExport(id: string, format: string) {
+    const template = exportTemplate[`${id}-${format}`] || "dark-ocean";
     const key = `${id}-${format}`;
     setExporting((prev) => ({ ...prev, [key]: "loading" }));
     const controller = new AbortController();
@@ -262,7 +264,7 @@ export default function LibraryPage() {
       const res = await fetch("/api/library/export", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, format }),
+        body: JSON.stringify({ id, format, template }),
         signal: controller.signal,
       });
 
@@ -433,14 +435,25 @@ export default function LibraryPage() {
                         }
 
                         return (
-                          <button
-                            key={fmt}
-                            onClick={() => handleExport(ebook.id, fmt)}
-                            className="bg-bg-3 hover:bg-accent-muted text-text-3 hover:text-accent px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase transition-colors border border-dashed border-border hover:border-accent/30"
-                            title={`Als ${fmt.toUpperCase()} exportieren`}
-                          >
-                            + {fmt}
-                          </button>
+                          <span key={fmt} className="flex items-center gap-0.5">
+                            <select
+                              value={exportTemplate[`${ebook.id}-${fmt}`] || "dark-ocean"}
+                              onChange={(e) => setExportTemplate(prev => ({ ...prev, [`${ebook.id}-${fmt}`]: e.target.value }))}
+                              className="bg-bg-3 text-text-3 text-[9px] px-1 py-1.5 rounded-l-md border border-dashed border-border focus:outline-none"
+                            >
+                              <option value="dark-ocean">Dark Ocean</option>
+                              <option value="clean-light">Light</option>
+                              <option value="print-ready">Print</option>
+                              <option value="kindle-kdp">KDP</option>
+                            </select>
+                            <button
+                              onClick={() => handleExport(ebook.id, fmt)}
+                              className="bg-bg-3 hover:bg-accent-muted text-text-3 hover:text-accent px-2 py-1.5 rounded-r-md text-[11px] font-semibold uppercase transition-colors border border-dashed border-border hover:border-accent/30 border-l-0"
+                              title={`Als ${fmt.toUpperCase()} exportieren`}
+                            >
+                              + {fmt}
+                            </button>
+                          </span>
                         );
                       })}
                     {ebook.status === "done" && ebook.markdownFile && (
