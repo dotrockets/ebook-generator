@@ -472,6 +472,15 @@ export default function LibraryPage() {
                         Cover PDF
                       </a>
                     )}
+                    {ebook.status === "done" && (
+                      <a
+                        href={`/cover?title=${encodeURIComponent(ebook.title)}&subtitle=${encodeURIComponent(ebook.subtitle || "")}&author=${encodeURIComponent(ebook.authors.join(", "))}&topic=${encodeURIComponent(ebook.topic)}&template=${encodeURIComponent(ebook.template || "dark-ocean")}${ebook.outputFiles.cover ? `&existingCover=${encodeURIComponent(ebook.id)}` : ""}`}
+                        className="bg-bg-3 hover:bg-bg-4 text-text-2 hover:text-text px-3 py-1.5 rounded-md text-[11px] font-medium transition-colors"
+                        title="Neues Cover erstellen"
+                      >
+                        Cover
+                      </a>
+                    )}
                     {ebook.kdpMetadata && (
                       <button
                         onClick={() => setExpandedKdp(expandedKdp === ebook.id ? null : ebook.id)}

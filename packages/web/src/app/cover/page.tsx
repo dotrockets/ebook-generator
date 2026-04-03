@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 const TEMPLATES = [
@@ -10,19 +11,39 @@ const TEMPLATES = [
   { value: "kindle-kdp", label: "Amazon KDP" },
 ];
 
-export default function CoverPage() {
-  const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
-  const [authors, setAuthors] = useState("");
-  const [imagePrompt, setImagePrompt] = useState("");
-  const [template, setTemplate] = useState("dark-ocean");
+function CoverPageInner() {
+  const searchParams = useSearchParams();
+
+  const [title, setTitle] = useState(searchParams.get("title") || "");
+  const [subtitle, setSubtitle] = useState(searchParams.get("subtitle") || "");
+  const [authors, setAuthors] = useState(searchParams.get("author") || "");
+  const [imagePrompt, setImagePrompt] = useState(searchParams.get("topic") || "");
+  const [template, setTemplate] = useState(searchParams.get("template") || "dark-ocean");
   const [accent, setAccent] = useState("#e67300");
+  const [existingCoverId, setExistingCoverId] = useState<string | null>(searchParams.get("existingCover"));
 
   // Step 1: background generation
   const [generatingBg, setGeneratingBg] = useState(false);
   const [bgImageUrl, setBgImageUrl] = useState<string | null>(null);
   const [bgBlob, setBgBlob] = useState<Blob | null>(null);
   const [bgError, setBgError] = useState<string | null>(null);
+
+  // Load existing cover from library if linked from Library page
+  useEffect(() => {
+    if (existingCoverId) {
+      fetch(`/api/library/download?id=${existingCoverId}&format=cover`)
+        .then((r) => {
+          if (!r.ok) throw new Error("Cover not found");
+          return r.blob();
+        })
+        .then((blob) => {
+          setBgBlob(blob);
+          setBgImageUrl(URL.createObjectURL(blob));
+          setExistingCoverId(null);
+        })
+        .catch(() => {});
+    }
+  }, [existingCoverId]);
 
   // Step 2: cover PDF composition
   const [composing, setComposing] = useState(false);
@@ -494,5 +515,13 @@ export default function CoverPage() {
         <span>ebook-gen v0.3.0</span>
       </footer>
     </div>
+  );
+}
+
+export default function CoverPage() {
+  return (
+    <Suspense>
+      <CoverPageInner />
+    </Suspense>
   );
 }
