@@ -226,6 +226,13 @@ function KdpPanel({ ebook }: { ebook: EbookEntry }) {
         </div>
       )}
 
+      {/* KDP Guide Link */}
+      <div className="pt-2 border-t border-border">
+        <Link href="/kdp-guide" className="text-[10px] text-accent hover:underline">
+          KDP Upload-Guide anzeigen →
+        </Link>
+      </div>
+
       {/* AI Disclosure */}
       <div className="text-[10px] text-text-3 italic border-t border-border pt-2">
         Hinweis: Bei KDP muss angegeben werden, dass der Inhalt AI-generiert ist.

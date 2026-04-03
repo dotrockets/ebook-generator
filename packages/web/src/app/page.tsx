@@ -217,6 +217,12 @@ export default function HomePage() {
             Library
           </Link>
           <Link
+            href="/kdp-guide"
+            className="text-xs text-text-2 hover:text-text px-3 py-1.5 rounded-md hover:bg-bg-3 transition-colors"
+          >
+            KDP Guide
+          </Link>
+          <Link
             href="/settings"
             className="text-xs text-text-2 hover:text-text px-3 py-1.5 rounded-md hover:bg-bg-3 transition-colors"
           >
