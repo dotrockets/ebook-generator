@@ -41,10 +41,6 @@
   ]
   $endif$
 
-  // === STYLE: CLASSIC ===
-  // Dark gradient from bottom, text at lower third
-  $if(cover-style)$$-- handled below --$$endif$
-
   // Gradient overlay (bottom-heavy for text readability)
   #place(bottom + center)[
     #rect(width: 100%, height: 70%, fill: gradient.linear(
