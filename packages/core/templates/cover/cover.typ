@@ -119,3 +119,5 @@
     #rect(width: 100%, height: 3pt, fill: accent-color)
   ]
 ]
+
+$body$
