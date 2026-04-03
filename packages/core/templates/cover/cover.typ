@@ -41,14 +41,16 @@
   ]
   $endif$
 
-  // Gradient overlay (bottom-heavy for text readability)
-  #place(bottom + center)[
-    #rect(width: 100%, height: 70%, fill: gradient.linear(
-      rgb("#00000000"),
+  // Gradient overlay (full page, bottom-heavy for text readability)
+  #place(top + center)[
+    #rect(width: 100%, height: 100%, fill: gradient.linear(
+      rgb("#00000010"),
+      rgb("#00000010"),
       rgb("#00000020"),
+      rgb("#00000040"),
       rgb("#00000080"),
-      rgb("#000000cc"),
-      rgb("#000000ee"),
+      rgb("#000000bb"),
+      rgb("#000000dd"),
       angle: 180deg,
     ))
   ]
