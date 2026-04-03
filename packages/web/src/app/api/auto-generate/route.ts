@@ -128,6 +128,7 @@ Anforderungen:
 - Verwende **fett**, *kursiv*, > Blockquotes, Listen, ggf. eine Tabelle
 - Ende mit praktischen Aktionsschritten oder einer Checkliste
 - KEINE Ueberleitung zum naechsten Kapitel am Ende
+- WICHTIG: Verwende korrekte deutsche Umlaute (ä, ö, ü, ß) — NIEMALS ae, oe, ue als Ersatz
 
 Antworte NUR mit dem Markdown-Content dieses Kapitels.`;
   }

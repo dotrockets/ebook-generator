@@ -111,6 +111,7 @@ export default function KdpGuidePage() {
               <li>EPUB-Datei als Manuskript hochladen</li>
               <li>Cover-Bild hochladen (das <strong>WebP/JPG aus der Library</strong>, nicht das PDF)</li>
             </ol>
+            <Tip>EPUB ist besser als DOCX fuer Kindle — es hat ein echtes navigierbares Inhaltsverzeichnis das Kindle sofort erkennt.</Tip>
             <Warning>Kindle eBook Cover: JPG/PNG, mindestens 1000x1600 px, ideal 2560x1600 px. Kein PDF!</Warning>
           </Step>
 
