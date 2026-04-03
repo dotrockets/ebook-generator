@@ -32,26 +32,26 @@
 #page[
   // Background image (full bleed)
   $if(cover-image)$
-  #place(top + center)[
+  #place(top + left)[
     #image("$cover-image$", width: 100%, height: 100%, fit: "cover")
   ]
   $else$
-  #place(top + center)[
+  #place(top + left)[
     #rect(width: 100%, height: 100%, fill: rgb("#1a1a2e"))
   ]
   $endif$
 
-  // Gradient overlay (full page, bottom-heavy for text readability)
-  #place(top + center)[
+  // Gradient overlay (full page, top-to-bottom: transparent → dark)
+  #place(top + left)[
     #rect(width: 100%, height: 100%, fill: gradient.linear(
-      rgb("#00000010"),
+      rgb("#00000005"),
       rgb("#00000010"),
       rgb("#00000020"),
-      rgb("#00000040"),
-      rgb("#00000080"),
-      rgb("#000000bb"),
-      rgb("#000000dd"),
-      angle: 180deg,
+      rgb("#00000050"),
+      rgb("#00000090"),
+      rgb("#000000cc"),
+      rgb("#000000ee"),
+      dir: ttb,
     ))
   ]
 
