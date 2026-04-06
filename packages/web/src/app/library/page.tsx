@@ -332,6 +332,12 @@ export default function LibraryPage() {
         </div>
         <div className="flex items-center gap-3">
           <Link
+            href="/reddit"
+            className="text-xs text-text-2 hover:text-text transition-colors"
+          >
+            Reddit
+          </Link>
+          <Link
             href="/settings"
             className="text-xs text-text-2 hover:text-text transition-colors"
           >

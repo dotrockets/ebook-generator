@@ -211,6 +211,12 @@ export default function HomePage() {
         </div>
         <div className="flex items-center gap-1">
           <Link
+            href="/reddit"
+            className="text-xs text-text-2 hover:text-text px-3 py-1.5 rounded-md hover:bg-bg-3 transition-colors"
+          >
+            Reddit
+          </Link>
+          <Link
             href="/library"
             className="text-xs text-text-2 hover:text-text px-3 py-1.5 rounded-md hover:bg-bg-3 transition-colors"
           >

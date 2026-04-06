@@ -16,6 +16,7 @@ export default function KdpGuidePage() {
           <h1 className="text-lg font-semibold text-text">KDP Upload-Guide</h1>
         </div>
         <div className="flex items-center gap-3">
+          <Link href="/reddit" className="text-xs text-text-2 hover:text-text transition-colors">Reddit</Link>
           <Link href="/library" className="text-xs text-text-2 hover:text-text transition-colors">Library</Link>
           <Link href="/create" className="text-xs bg-accent text-white px-4 py-1.5 rounded-lg font-medium hover:bg-accent-light transition-colors">+ Erstellen</Link>
         </div>
