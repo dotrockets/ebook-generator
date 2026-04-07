@@ -99,7 +99,7 @@ async function triggerAutoGenerate(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         topic: idea.topic,
-        pages: 20,
+        pages: 50,
         lang: "de",
         format: "pdf",
         template: "dark-ocean",
