@@ -5,24 +5,14 @@
  * Or without ID: picks the latest book from library
  */
 
-import { createTransport } from "nodemailer";
 import { readFileSync } from "fs";
 import { join } from "path";
 
 const DATA_DIR = process.env.DATA_DIR || "/tmp/ebook-gen-data";
 const DOMAIN = process.env.DOMAIN || "ebookgenerator.puls.io";
-
-const SMTP_HOST = process.env.SMTP_HOST || "w00e161e.kasserver.com";
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || "587");
-const SMTP_USER = process.env.SMTP_USER || "send@herzschlag-der-erde.de";
-const SMTP_PASS = process.env.SMTP_PASS;
-const FROM_EMAIL = process.env.FROM_EMAIL || "send@herzschlag-der-erde.de";
+const RESEND_KEY = process.env.RESEND_API_KEY || "re_idGXGbET_LhL3krSTMetAG96Kbuchz8Lj";
+const FROM_EMAIL = "ebook-gen <send@herzschlag-der-erde.de>";
 const TO_EMAIL = process.env.TO_EMAIL || "mail@bjoernpuls.com";
-
-if (!SMTP_PASS) {
-  console.error("SMTP_PASS required");
-  process.exit(1);
-}
 
 // Load library
 const libPath = join(DATA_DIR, "library.json");
@@ -171,22 +161,24 @@ const html = `
 </div>
 `;
 
-// Send
-const transporter = createTransport({
-  host: SMTP_HOST,
-  port: SMTP_PORT,
-  secure: false,
-  auth: { user: SMTP_USER, pass: SMTP_PASS },
-});
-
+// Send via Resend API
 try {
-  const info = await transporter.sendMail({
-    from: `"ebook-gen" <${FROM_EMAIL}>`,
-    to: TO_EMAIL,
-    subject,
-    html,
+  const resp = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${RESEND_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      to: [TO_EMAIL],
+      subject,
+      html,
+    }),
   });
-  console.log(`Email sent to ${TO_EMAIL}: ${info.messageId}`);
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(JSON.stringify(data));
+  console.log(`Email sent to ${TO_EMAIL}: ${data.id}`);
 } catch (err) {
   console.error("Failed to send email:", err.message);
   process.exit(1);
