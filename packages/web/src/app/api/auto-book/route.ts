@@ -63,6 +63,82 @@ const PEN_NAMES: Record<string, string> = {
 };
 const DEFAULT_PEN_NAME = "Luisa Falkner";
 
+// Cover design presets per category
+interface CoverPreset {
+  style: string;
+  headingFont: string;
+  bodyFont: string;
+  accent: string;
+  promptStyle: string;
+}
+
+const COVER_PRESETS: Record<string, CoverPreset> = {
+  "self-help": {
+    style: "cinematic",
+    headingFont: "Cormorant Garamond",
+    bodyFont: "DM Sans 9pt",
+    accent: "#d4a574",
+    promptStyle: "warm golden hour lighting, person silhouette at sunrise, inspirational, hope, soft bokeh, atmospheric fog",
+  },
+  health: {
+    style: "bold",
+    headingFont: "Montserrat",
+    bodyFont: "Inter",
+    accent: "#22c55e",
+    promptStyle: "fresh vibrant nature, green leaves, clean water droplets, healthy food flat lay, bright natural daylight, energetic",
+  },
+  productivity: {
+    style: "minimal",
+    headingFont: "Space Grotesk",
+    bodyFont: "Inter",
+    accent: "#3b82f6",
+    promptStyle: "clean minimal desk setup, modern workspace, geometric shapes, blue accent, sharp focus, contemporary design",
+  },
+  finance: {
+    style: "minimal",
+    headingFont: "Inter",
+    bodyFont: "DM Sans 9pt",
+    accent: "#0d9488",
+    promptStyle: "abstract financial growth chart, teal and dark blue tones, premium feel, clean geometric patterns, wealth and success",
+  },
+  relationships: {
+    style: "editorial",
+    headingFont: "Playfair Display",
+    bodyFont: "DM Sans 9pt",
+    accent: "#e11d48",
+    promptStyle: "warm intimate setting, soft candlelight, two coffee cups, cozy atmosphere, romantic warm tones, editorial photography",
+  },
+  parenting: {
+    style: "editorial",
+    headingFont: "Cormorant Garamond",
+    bodyFont: "DM Sans 9pt",
+    accent: "#f59e0b",
+    promptStyle: "warm family scene, playful colors, sunlit room, children toys, soft pastel palette, joyful bright atmosphere",
+  },
+  "mental-health": {
+    style: "split",
+    headingFont: "Cormorant Garamond",
+    bodyFont: "Inter",
+    accent: "#8b5cf6",
+    promptStyle: "serene calm landscape, still water reflection, meditation zen stones, purple blue twilight sky, peaceful tranquil mood",
+  },
+  career: {
+    style: "split",
+    headingFont: "Montserrat",
+    bodyFont: "Inter",
+    accent: "#f97316",
+    promptStyle: "professional modern office skyline, confident pose, urban architecture, warm orange sunset, ambitious upward perspective",
+  },
+};
+
+const DEFAULT_PRESET: CoverPreset = {
+  style: "cinematic",
+  headingFont: "Playfair Display",
+  bodyFont: "DM Sans 9pt",
+  accent: "#e67300",
+  promptStyle: "dramatic cinematic lighting, atmospheric depth, rich color palette, editorial photography",
+};
+
 interface RedditCache {
   ideas: RedditIdea[];
   posts: unknown[];
@@ -99,11 +175,11 @@ async function triggerAutoGenerate(
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
-  const penName =
-    PEN_NAMES[idea.category] || DEFAULT_PEN_NAME;
+  const penName = PEN_NAMES[idea.category] || DEFAULT_PEN_NAME;
+  const preset = COVER_PRESETS[idea.category] || DEFAULT_PRESET;
 
   console.log(
-    `[auto-book] triggering auto-generate for: "${idea.title}" (demand: ${idea.demandScore}, author: ${penName})`
+    `[auto-book] triggering: "${idea.title}" (demand: ${idea.demandScore}, author: ${penName}, cover: ${preset.style})`
   );
 
   try {
@@ -120,6 +196,11 @@ async function triggerAutoGenerate(
         pageWidth: "15.24cm",
         pageHeight: "22.86cm",
         author: penName,
+        coverStyle: preset.style,
+        headingFont: preset.headingFont,
+        bodyFont: preset.bodyFont,
+        accent: preset.accent,
+        coverPromptHint: preset.promptStyle,
       }),
     });
 

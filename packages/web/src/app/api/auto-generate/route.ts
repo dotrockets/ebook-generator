@@ -166,6 +166,11 @@ export async function POST(request: NextRequest) {
     pageWidth,
     pageHeight,
     author,
+    coverStyle,
+    headingFont: customHeadingFont,
+    bodyFont: customBodyFont,
+    accent: customAccent,
+    coverPromptHint,
   } = body as {
     topic: string;
     pages?: number;
@@ -176,6 +181,11 @@ export async function POST(request: NextRequest) {
     pageWidth?: string;
     pageHeight?: string;
     author?: string;
+    coverStyle?: string;
+    headingFont?: string;
+    bodyFont?: string;
+    accent?: string;
+    coverPromptHint?: string;
   };
 
   const VALID_PAGES = [5, 10, 15, 20, 30, 50];
@@ -314,7 +324,8 @@ export async function POST(request: NextRequest) {
         const replicate = new Replicate({ auth: replicateToken });
         coverPromise = (async () => {
           try {
-            const coverPrompt = `Stunning professional book cover background image. ${outline.coverImagePrompt}. Ultra high quality, 8K resolution, cinematic dramatic lighting, rich color palette, atmospheric depth of field. Absolutely NO text, NO letters, NO words, NO numbers, NO titles, NO watermarks anywhere in the image. Clean composition with visual weight in the upper two-thirds, leaving the lower third slightly darker and less busy for text overlay. Professional publishing quality, suitable for Amazon KDP print book cover at 300 DPI. Shot on Hasselblad, editorial photography style.`;
+            const styleHint = coverPromptHint ? ` Style: ${coverPromptHint}.` : "";
+            const coverPrompt = `Stunning professional book cover background image. ${outline.coverImagePrompt}.${styleHint} Ultra high quality, 8K resolution, cinematic dramatic lighting, rich color palette, atmospheric depth of field. Absolutely NO text, NO letters, NO words, NO numbers, NO titles, NO watermarks anywhere in the image. Clean composition with visual weight in the upper two-thirds, leaving the lower third slightly darker and less busy for text overlay. Professional publishing quality, suitable for Amazon KDP print book cover at 300 DPI. Shot on Hasselblad, editorial photography style.`;
             console.log("[auto-generate] generating cover...");
             const output = await replicate.run("black-forest-labs/flux-1.1-pro", {
               input: {
@@ -435,9 +446,10 @@ lang: ${lang}
             subtitle: outline.subtitle || undefined,
             authors: [authorName],
             publisher: settings.defaultPublisher || undefined,
-            accent: settings.accent || undefined,
-            headingFont: settings.headingFont || undefined,
-            bodyFont: settings.bodyFont || undefined,
+            accent: customAccent || settings.accent || undefined,
+            headingFont: customHeadingFont || settings.headingFont || undefined,
+            bodyFont: customBodyFont || settings.bodyFont || undefined,
+            coverStyle: coverStyle || undefined,
             fontPath,
             output: composedCoverPath,
           });

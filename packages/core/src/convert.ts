@@ -313,6 +313,7 @@ export async function generateCoverPdf(options: {
   accent?: string;
   headingFont?: string;
   bodyFont?: string;
+  coverStyle?: string;
   pageWidth?: string;
   pageHeight?: string;
   fontPath?: string;
@@ -347,6 +348,7 @@ export async function generateCoverPdf(options: {
   if (options.accent) args.push(`--variable=accent:${options.accent}`);
   if (options.headingFont) args.push(`--variable=heading-font:${options.headingFont}`);
   if (options.bodyFont) args.push(`--variable=body-font:${options.bodyFont}`);
+  if (options.coverStyle) args.push(`--variable=cover-style:${options.coverStyle}`);
   if (options.pageWidth) args.push(`--variable=page-width:${options.pageWidth}`);
   if (options.pageHeight) args.push(`--variable=page-height:${options.pageHeight}`);
 
