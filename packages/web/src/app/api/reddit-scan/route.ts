@@ -13,6 +13,7 @@ const CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
 const REDDIT_BASE = "https://www.reddit.com";
 const USER_AGENT = "EbookGenRedditScanner/1.0 (Ebook Research Tool)";
 const REQUEST_DELAY = 2000;
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY || "";
 
 const DEFAULT_SUBREDDITS = [
   "selfimprovement",
@@ -132,6 +133,46 @@ async function scanReddit(subreddits: string[]): Promise<RedditPost[]> {
   return allPosts.slice(0, 50);
 }
 
+async function searchPexels(query: string): Promise<string | null> {
+  if (!PEXELS_API_KEY) return null;
+  try {
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=portrait`;
+    const resp = await fetch(url, {
+      headers: { Authorization: PEXELS_API_KEY },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) return null;
+    const json = await resp.json();
+    return json.photos?.[0]?.src?.portrait || null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchCoverImages(
+  ideas: Record<string, unknown>[]
+): Promise<void> {
+  if (!PEXELS_API_KEY) return;
+  console.log("[reddit-scan] fetching Pexels cover images...");
+
+  // Fetch in parallel batches of 4
+  for (let i = 0; i < ideas.length; i += 4) {
+    const batch = ideas.slice(i, i + 4);
+    const results = await Promise.all(
+      batch.map((idea) =>
+        searchPexels((idea.coverSearchQuery as string) || (idea.title as string))
+      )
+    );
+    results.forEach((url, j) => {
+      if (url) batch[j].coverImageUrl = url;
+    });
+    if (i + 4 < ideas.length) await sleep(500);
+  }
+
+  const withImages = ideas.filter((i) => i.coverImageUrl).length;
+  console.log(`[reddit-scan] ${withImages}/${ideas.length} cover images found`);
+}
+
 function buildAnalysisPrompt(posts: RedditPost[]): string {
   const postSummaries = posts
     .map(
@@ -164,6 +205,7 @@ Antworte NUR mit diesem JSON-Array:
     "whyItSells": "Warum sich das gerade gut verkauft — mit Bezug auf das Reddit-Problem (1 Satz)",
     "redditSource": "Zusammenfassung des Reddit-Trends/Problems das die Idee inspiriert hat",
     "redditPosts": ["r/subreddit: Titel des relevanten Posts"],
+    "coverSearchQuery": "2-3 englische Keywords fuer Stockfoto-Suche (z.B. 'meditation calm nature', 'finance money growth')",
     "cover": {
       "style": "minimal | gradient | bold | elegant | playful",
       "dominantColor": "#hexcode",
@@ -204,6 +246,7 @@ async function refreshInBackground(): Promise<void> {
   try {
     const posts = await scanReddit(DEFAULT_SUBREDDITS);
     const ideas = await analyzeWithClaude(posts);
+    await fetchCoverImages(ideas as Record<string, unknown>[]);
     await writeCacheEntry(ideas, posts);
   } catch (err) {
     console.error("[reddit-scan] background refresh failed:", err);
@@ -248,6 +291,7 @@ export async function GET(request: NextRequest) {
     const posts = await scanReddit(DEFAULT_SUBREDDITS);
     console.log(`[reddit-scan] fetched ${posts.length} posts`);
     const ideas = await analyzeWithClaude(posts);
+    await fetchCoverImages(ideas as Record<string, unknown>[]);
     await writeCacheEntry(ideas, posts);
     return NextResponse.json(
       {

@@ -21,6 +21,7 @@ interface RedditIdea {
   whyItSells: string;
   redditSource: string;
   redditPosts: string[];
+  coverImageUrl?: string;
   cover: CoverDesign;
 }
 
@@ -44,10 +45,36 @@ function timeAgo(isoDate: string): string {
 function CoverPreview({
   cover,
   title,
+  imageUrl,
 }: {
   cover: CoverDesign;
   title: string;
+  imageUrl?: string;
 }) {
+  if (imageUrl) {
+    return (
+      <div className="w-full aspect-[3/4] rounded-xl relative overflow-hidden group-hover:scale-[1.02] transition-transform duration-300">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageUrl}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Dark gradient overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+        {/* Title overlay */}
+        <div className="absolute inset-0 flex flex-col items-center justify-end p-4 pb-5">
+          <span className="text-2xl mb-2 drop-shadow-lg">
+            {cover.iconEmoji}
+          </span>
+          <h3 className="text-center font-bold text-sm leading-tight px-2 text-white drop-shadow-lg">
+            {title}
+          </h3>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="w-full aspect-[3/4] rounded-xl flex flex-col items-center justify-center p-4 relative overflow-hidden group-hover:scale-[1.02] transition-transform duration-300"
@@ -97,7 +124,7 @@ function IdeaCard({ idea }: { idea: RedditIdea }) {
     >
       <div className="bg-bg-2 border border-border rounded-xl overflow-hidden hover:border-border-hover hover:bg-bg-3 transition-all duration-200 h-full flex flex-col">
         <div className="p-3 pb-0">
-          <CoverPreview cover={idea.cover} title={idea.title} />
+          <CoverPreview cover={idea.cover} title={idea.title} imageUrl={idea.coverImageUrl} />
         </div>
 
         <div className="p-4 space-y-2 flex-1 flex flex-col">
