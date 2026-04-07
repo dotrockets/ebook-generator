@@ -22,6 +22,8 @@ interface RedditIdea {
   redditSource: string;
   redditPosts: string[];
   coverImageUrl?: string;
+  demandScore?: number;
+  demandReason?: string;
   cover: CoverDesign;
 }
 
@@ -129,6 +131,28 @@ function IdeaCard({ idea }: { idea: RedditIdea }) {
 
         <div className="p-4 space-y-2 flex-1 flex flex-col">
           <div className="flex items-center gap-2">
+            {idea.demandScore != null && (
+              <span
+                className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                style={{
+                  background:
+                    idea.demandScore >= 80
+                      ? "rgba(34,197,94,0.15)"
+                      : idea.demandScore >= 60
+                        ? "rgba(245,158,11,0.15)"
+                        : "rgba(255,255,255,0.06)",
+                  color:
+                    idea.demandScore >= 80
+                      ? "#22c55e"
+                      : idea.demandScore >= 60
+                        ? "#f59e0b"
+                        : "#63636e",
+                }}
+                title={idea.demandReason || "Demand Score"}
+              >
+                {idea.demandScore}
+              </span>
+            )}
             <span
               className="text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded"
               style={{

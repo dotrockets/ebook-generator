@@ -190,6 +190,8 @@ WICHTIG:
 - Jedes Ebook muss ein konkretes Problem aus den Posts loesen
 - Nenne die Reddit-Quelle/das Problem das dahinter steckt
 - Nutze echte Umlaute: ä ö ü ß (NICHT ae oe ue ss)
+- Bewerte jede Idee mit einem demandScore (1-100) basierend auf: Anzahl relevanter Posts, Engagement (Score + Kommentare), Aktualitaet des Problems, Kommerzielles Potenzial
+- Sortiere die Ideen absteigend nach demandScore (hoechste Nachfrage zuerst)
 
 Reddit-Posts:
 ${postSummaries}
@@ -205,6 +207,8 @@ Antworte NUR mit diesem JSON-Array:
     "whyItSells": "Warum sich das gerade gut verkauft — mit Bezug auf das Reddit-Problem (1 Satz)",
     "redditSource": "Zusammenfassung des Reddit-Trends/Problems das die Idee inspiriert hat",
     "redditPosts": ["r/subreddit: Titel des relevanten Posts"],
+    "demandScore": 85,
+    "demandReason": "Kurze Begruendung warum die Nachfrage hoch/niedrig ist (Anzahl Posts, Engagement, Aktualitaet)",
     "coverSearchQuery": "2-3 englische Keywords fuer Stockfoto-Suche (z.B. 'meditation calm nature', 'finance money growth')",
     "cover": {
       "style": "minimal | gradient | bold | elegant | playful",
