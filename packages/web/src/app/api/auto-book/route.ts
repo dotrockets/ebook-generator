@@ -102,8 +102,10 @@ async function triggerAutoGenerate(
         pages: 50,
         lang: "de",
         format: "pdf",
-        template: "dark-ocean",
+        template: "kindle-kdp",
         paper: "a4",
+        pageWidth: "15.24cm",
+        pageHeight: "22.86cm",
       }),
     });
 
