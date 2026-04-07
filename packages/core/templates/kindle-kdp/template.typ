@@ -228,6 +228,8 @@ $endif$
 // chapter number as small-caps label, drop cap on first paragraph
 #show heading.where(level: 1): it => {
   pagebreak(weak: true, to: "odd")
+  // Step heading counter (show rule replaces the heading, so counter must be stepped manually)
+  counter(heading).step()
   // Update running header state
   current-chapter.update(it.body)
   // Chapter opener: generous drop from top (~1/3 page)

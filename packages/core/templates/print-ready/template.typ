@@ -188,6 +188,7 @@ $endif$
 // Chapter headings (H1)
 #show heading.where(level: 1): it => {
   pagebreak(weak: true, to: "odd")
+  counter(heading).step()
   current-chapter.update(it.body)
   v(5cm)
   align(center)[
