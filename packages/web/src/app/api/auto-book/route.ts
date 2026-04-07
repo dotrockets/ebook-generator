@@ -50,6 +50,19 @@ interface RedditIdea {
   [key: string]: unknown;
 }
 
+// Pen names per category — never use real name for auto-generated books
+const PEN_NAMES: Record<string, string> = {
+  "self-help": "Lena Bergmann",
+  health: "Dr. Kathrin Sommer",
+  productivity: "Markus Stein",
+  finance: "Thomas Weidner",
+  relationships: "Anna Lichtenberg",
+  parenting: "Marie Hofmann",
+  "mental-health": "Sarah Keller",
+  career: "Jan Hartmann",
+};
+const DEFAULT_PEN_NAME = "Luisa Falkner";
+
 interface RedditCache {
   ideas: RedditIdea[];
   posts: unknown[];
@@ -86,14 +99,14 @@ async function triggerAutoGenerate(
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
+  const penName =
+    PEN_NAMES[idea.category] || DEFAULT_PEN_NAME;
+
   console.log(
-    `[auto-book] triggering auto-generate for: "${idea.title}" (demand: ${idea.demandScore})`
+    `[auto-book] triggering auto-generate for: "${idea.title}" (demand: ${idea.demandScore}, author: ${penName})`
   );
 
   try {
-    // Fire-and-forget: start the SSE request but don't await the full stream.
-    // The auto-generate endpoint creates a library entry immediately,
-    // then generates chapters in the background via SSE streaming.
     const resp = await fetch(`${baseUrl}/api/auto-generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -106,6 +119,7 @@ async function triggerAutoGenerate(
         paper: "a4",
         pageWidth: "15.24cm",
         pageHeight: "22.86cm",
+        author: penName,
       }),
     });
 

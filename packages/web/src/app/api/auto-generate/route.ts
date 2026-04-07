@@ -165,6 +165,7 @@ export async function POST(request: NextRequest) {
     paper = "a4",
     pageWidth,
     pageHeight,
+    author,
   } = body as {
     topic: string;
     pages?: number;
@@ -174,6 +175,7 @@ export async function POST(request: NextRequest) {
     paper?: string;
     pageWidth?: string;
     pageHeight?: string;
+    author?: string;
   };
 
   const VALID_PAGES = [5, 10, 15, 20, 30, 50];
@@ -255,7 +257,7 @@ export async function POST(request: NextRequest) {
     await mkdir(workDir, { recursive: true });
     const ebookId = randomUUID();
     const settings = await loadSettings();
-    const authorName = settings.defaultAuthor || "AI Generated";
+    const authorName = author || settings.defaultAuthor || "AI Generated";
 
     // Create library entry
     const entry: EbookEntry = {
