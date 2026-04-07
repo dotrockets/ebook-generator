@@ -109,15 +109,21 @@ async function scanReddit(subreddits: string[]): Promise<RedditPost[]> {
   const allPosts: RedditPost[] = [];
   const seen = new Set<string>();
 
-  for (const sub of subreddits) {
-    const posts = await fetchSubreddit(sub, "hot", 15);
-    for (const post of posts) {
-      if (!seen.has(post.id) && post.score >= 10) {
-        seen.add(post.id);
-        allPosts.push(post);
+  // Fetch in parallel batches of 3 (respect Reddit rate limits)
+  for (let i = 0; i < subreddits.length; i += 3) {
+    const batch = subreddits.slice(i, i + 3);
+    const results = await Promise.all(
+      batch.map((sub) => fetchSubreddit(sub, "hot", 15))
+    );
+    for (const posts of results) {
+      for (const post of posts) {
+        if (!seen.has(post.id) && post.score >= 10) {
+          seen.add(post.id);
+          allPosts.push(post);
+        }
       }
     }
-    await sleep(REQUEST_DELAY);
+    if (i + 3 < subreddits.length) await sleep(REQUEST_DELAY);
   }
 
   allPosts.sort(
