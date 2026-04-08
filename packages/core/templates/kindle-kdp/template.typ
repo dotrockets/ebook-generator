@@ -223,13 +223,16 @@ $endif$
   footer: none,
 )
 
+// Chapter number tracker (Typst counter doesn't resolve inside show rules)
+#let chapter-num = state("chapter-num", 0)
+
 // === CHAPTER HEADINGS (H1) ===
 // Chicago Manual convention: recto start, generous top space,
 // chapter number as small-caps label, drop cap on first paragraph
 #show heading.where(level: 1): it => {
   pagebreak(weak: true, to: "odd")
-  // Step heading counter (show rule replaces the heading, so counter must be stepped manually)
-  counter(heading).step()
+  // Step chapter counter via state (reliable inside show rules)
+  chapter-num.update(n => n + 1)
   // Update running header state
   current-chapter.update(it.body)
   // Chapter opener: generous drop from top (~1/3 page)
@@ -237,7 +240,10 @@ $endif$
   align(center)[
     // Chapter number label
     #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em, weight: "regular")[
-      #upper[KAPITEL #counter(heading).display()]
+      #context {
+        let n = chapter-num.get()
+        upper[KAPITEL #n]
+      }
     ]
     #v(0.6cm)
     // Ornamental divider

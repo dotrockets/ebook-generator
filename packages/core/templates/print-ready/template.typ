@@ -185,15 +185,21 @@ $endif$
   footer: none,
 )
 
+// Chapter number tracker
+#let chapter-num = state("chapter-num", 0)
+
 // Chapter headings (H1)
 #show heading.where(level: 1): it => {
   pagebreak(weak: true, to: "odd")
-  counter(heading).step()
+  chapter-num.update(n => n + 1)
   current-chapter.update(it.body)
   v(5cm)
   align(center)[
     #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em)[
-      #upper[KAPITEL #counter(heading).display()]
+      #context {
+        let n = chapter-num.get()
+        upper[KAPITEL #n]
+      }
     ]
     #v(0.6cm)
     #text(size: 10pt, fill: rule-color)[--- · ---]
