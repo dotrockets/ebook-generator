@@ -469,7 +469,7 @@ lang: ${lang}
         .replace(/\s+/g, "-");
       const outputPath = join(workDir, `${slug}.${format}`);
 
-      const options: ConvertOptions = {
+      const baseOptions: ConvertOptions = {
         input: inputPath,
         output: outputPath,
         title: outline.title,
@@ -501,7 +501,7 @@ lang: ${lang}
 
       let result;
       try {
-        result = await convert(options, format as OutputFormat);
+        result = await convert(baseOptions, format as OutputFormat);
       } catch (convertErr: unknown) {
         const msg = convertErr instanceof Error ? convertErr.message : String(convertErr);
         const stderr = convertErr && typeof convertErr === "object" && "stderr" in convertErr
@@ -522,6 +522,24 @@ lang: ${lang}
         });
         await send("error", { error: `PDF-Konvertierung fehlgeschlagen: ${stderr || msg}` });
         return;
+      }
+
+      // Also generate EPUB for KDP (parallel to saving)
+      let epubFilename: string | undefined;
+      if (format === "pdf") {
+        try {
+          const epubPath = join(workDir, `${slug}.epub`);
+          await convert(
+            { ...baseOptions, output: epubPath },
+            "epub" as OutputFormat
+          );
+          epubFilename = `${slug}.epub`;
+          const epubBuffer = await readFile(epubPath);
+          await saveFile(ebookId, epubFilename, epubBuffer);
+          console.log(`[auto-generate] EPUB generated: ${epubFilename}`);
+        } catch (epubErr) {
+          console.error("[auto-generate] EPUB generation failed (non-fatal):", epubErr);
+        }
       }
 
       // Step 5: Save to library
@@ -550,6 +568,7 @@ lang: ${lang}
         markdownFile: mdFilename,
         outputFiles: {
           [format]: outFilename,
+          ...(epubFilename ? { epub: epubFilename } : {}),
           ...(coverBuffer ? { cover: "cover.webp" } : {}),
           ...(composedCoverPath && existsSync(composedCoverPath) ? { "cover-pdf": "cover-composed.pdf" } : {}),
         },

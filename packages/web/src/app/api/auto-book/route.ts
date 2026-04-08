@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
-import { loadLibrary } from "../library/store";
+import { loadLibrary, getEntry, type EbookEntry } from "../library/store";
 
 export const dynamic = "force-dynamic";
 
@@ -138,6 +138,111 @@ const DEFAULT_PRESET: CoverPreset = {
   accent: "#e67300",
   promptStyle: "dramatic cinematic lighting, atmospheric depth, rich color palette, editorial photography",
 };
+
+async function sendNotificationEmail(ebook: EbookEntry): Promise<void> {
+  const resendKey = process.env.RESEND_API_KEY;
+  const toEmail = process.env.TO_EMAIL || "mail@bjoernpuls.com";
+  if (!resendKey) {
+    console.log("[auto-book] RESEND_API_KEY not set, skipping email");
+    return;
+  }
+
+  const domain = process.env.DOMAIN || "ebookgenerator.puls.io";
+  const downloadBase = `https://${domain}/api/library/download?id=${ebook.id}`;
+  const kdp = ebook.kdpMetadata;
+
+  const subject = `Neues Auto-Book: "${ebook.title}" — KDP-ready!`;
+  const html = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 700px; margin: 0 auto; color: #1a1a1a;">
+  <div style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); padding: 24px 32px; border-radius: 12px 12px 0 0;">
+    <h1 style="color: white; margin: 0; font-size: 20px;">Neues Auto-Book generiert</h1>
+    <p style="color: rgba(255,255,255,0.8); margin: 8px 0 0; font-size: 14px;">Reddit-Scanner → AI → KDP-ready PDF + EPUB</p>
+  </div>
+  <div style="background: #f9fafb; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+    <div style="background: white; padding: 24px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 24px;">
+      <h2 style="margin: 0 0 4px; font-size: 22px; color: #111;">${ebook.title}</h2>
+      <p style="margin: 0 0 16px; color: #6b7280; font-size: 15px;">${ebook.subtitle || ""}</p>
+      <div style="font-size: 13px; color: #6b7280;">
+        ${ebook.wordCount?.toLocaleString("de-DE") || "?"} Woerter · ${ebook.chapters?.length || "?"} Kapitel · ${ebook.authors?.join(", ")}
+      </div>
+    </div>
+    <div style="background: white; padding: 24px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 24px;">
+      <h3 style="margin: 0 0 12px; font-size: 16px;">Downloads</h3>
+      <p style="margin: 4px 0;"><a href="${downloadBase}&format=pdf" style="color: #8b5cf6;">PDF herunterladen</a></p>
+      ${ebook.outputFiles?.epub ? `<p style="margin: 4px 0;"><a href="${downloadBase}&format=epub" style="color: #8b5cf6;">EPUB herunterladen</a></p>` : ""}
+      <p style="margin: 4px 0;"><a href="${downloadBase}&format=md" style="color: #8b5cf6;">Markdown herunterladen</a></p>
+      ${ebook.outputFiles?.["cover-pdf"] ? `<p style="margin: 4px 0;"><a href="${downloadBase}&format=cover-composed" style="color: #8b5cf6;">Cover PDF herunterladen</a></p>` : ""}
+    </div>
+    <div style="background: white; padding: 24px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 24px;">
+      <h3 style="margin: 0 0 12px; font-size: 16px;">Kapitel</h3>
+      <ol style="margin: 0; padding-left: 20px; color: #374151; font-size: 14px; line-height: 1.8;">
+        ${(ebook.chapters || []).map((c) => `<li>${c}</li>`).join("")}
+      </ol>
+    </div>
+    ${kdp ? `
+    <div style="background: white; padding: 24px; border-radius: 8px; border: 2px solid #8b5cf6; margin-bottom: 24px;">
+      <h3 style="margin: 0 0 16px; font-size: 16px; color: #8b5cf6;">KDP Metadaten (Copy/Paste)</h3>
+      <div style="margin-bottom: 16px;">
+        <p style="font-size: 12px; color: #6b7280; margin: 0 0 4px;">TITEL</p>
+        <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; font-size: 14px; font-family: monospace;">${kdp.searchTitle || ebook.title}</div>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <p style="font-size: 12px; color: #6b7280; margin: 0 0 4px;">UNTERTITEL</p>
+        <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; font-size: 14px; font-family: monospace;">${kdp.searchSubtitle || ebook.subtitle || ""}</div>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <p style="font-size: 12px; color: #6b7280; margin: 0 0 4px;">BESCHREIBUNG</p>
+        <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; font-size: 13px; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto;">${(kdp.description || "").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <p style="font-size: 12px; color: #6b7280; margin: 0 0 4px;">KEYWORDS</p>
+        <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; font-size: 14px; font-family: monospace;">${(kdp.keywords || []).join(" | ")}</div>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <p style="font-size: 12px; color: #6b7280; margin: 0 0 4px;">KATEGORIEN</p>
+        ${(kdp.categories || []).map((c) => `<div style="background: #f3f4f6; padding: 8px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 4px;">${c.path || c.name}</div>`).join("")}
+      </div>
+      <div style="margin-bottom: 16px;">
+        <p style="font-size: 12px; color: #6b7280; margin: 0 0 4px;">PREIS</p>
+        <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; font-size: 14px;">
+          ${kdp.pricing?.recommendedEUR || "?"} EUR / ${kdp.pricing?.recommendedUSD || "?"} USD
+        </div>
+      </div>
+      ${kdp.preflight ? `
+      <div style="margin-bottom: 16px;">
+        <p style="font-size: 12px; color: #6b7280; margin: 0 0 4px;">DRUCKDATEN</p>
+        <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; font-size: 13px;">
+          Trim: ${kdp.preflight.trimSize} · Spine: ${kdp.preflight.spineWidth} · Cover: ${kdp.preflight.coverDimensions}
+        </div>
+      </div>` : ""}
+    </div>` : ""}
+    <p style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 24px;">
+      Auto-generiert von ebook-gen · Reddit → Claude → Typst → KDP
+    </p>
+  </div>
+</div>`;
+
+  try {
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: process.env.FROM_EMAIL || "ebook-gen <send@herzschlag-der-erde.de>",
+        to: [toEmail],
+        subject,
+        html,
+      }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(JSON.stringify(data));
+    console.log(`[auto-book] email sent to ${toEmail}: ${data.id}`);
+  } catch (err) {
+    console.error("[auto-book] email failed:", err);
+  }
+}
 
 interface RedditCache {
   ideas: RedditIdea[];
@@ -352,6 +457,13 @@ export async function POST(request: NextRequest) {
 
   if (ebookId) {
     console.log(`[auto-book] done! ebook ID: ${ebookId}`);
+
+    // Send notification email with KDP metadata + download links
+    const ebook = await getEntry(ebookId);
+    if (ebook) {
+      await sendNotificationEmail(ebook);
+    }
+
     return NextResponse.json({
       status: "done",
       ebookId,
