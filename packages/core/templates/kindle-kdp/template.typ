@@ -428,7 +428,8 @@ $body$
 ]
 #v(1fr)
 
-// --- BONUS CONTENT PAGE ---
+$if(website)$
+// --- BONUS CONTENT PAGE (only if website is set) ---
 #pagebreak()
 #v(5cm)
 #align(center)[
@@ -455,17 +456,12 @@ $body$
 
       #v(1cm)
       #set text(size: 9pt, fill: text-secondary)
-      $if(website)$
-      Besuchen Sie *$website$* und geben Sie \
-      den Code *LESER2026* ein.
-      $else$
-      Scannen Sie den QR-Code oder besuchen Sie \
-      die Website des Autors fuer den Download.
-      $endif$
+      Besuchen Sie *$website$* fuer den Download.
     ]
   ]
 ]
 #v(1fr)
+$endif$
 
 $if(back-page)$
 // --- ABOUT THE AUTHOR ---
@@ -490,18 +486,3 @@ $endif$
 ]
 #v(1fr)
 $endif$
-
-// --- NOTES PAGE (Notizen) ---
-#pagebreak(to: "odd")
-#v(3cm)
-#align(center)[
-  #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em)[NOTIZEN]
-]
-#v(2cm)
-// Ruled lines for notes
-#{
-  for i in range(18) {
-    v(1.1cm)
-    line(length: 100%, stroke: 0.15pt + rgb("#cccccc"))
-  }
-}
