@@ -466,7 +466,7 @@ $endif$
 $if(back-page)$
 // --- ABOUT THE AUTHOR ---
 #pagebreak(to: "odd")
-#v(6cm)
+#v(5cm)
 #align(center)[
   #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em)[UEBER DEN AUTOR]
   #v(0.6cm)
@@ -475,6 +475,16 @@ $if(back-page)$
   #text(font: heading-font, size: 16pt, fill: text-primary)[
     $if(author)$$author$$else$$for(authors)$$authors$$sep$ · $endfor$$endif$
   ]
+]
+$if(author-bio)$
+#v(1.2cm)
+#block(width: 75%, inset: 0pt)[
+  #set par(first-line-indent: 0pt, justify: true)
+  #set text(size: 9.5pt, fill: text-secondary)
+  #align(center)[$author-bio$]
+]
+$endif$
+#align(center)[
 $if(publisher)$
   #v(0.8cm)
   #text(size: 9pt, fill: text-secondary)[$publisher$]

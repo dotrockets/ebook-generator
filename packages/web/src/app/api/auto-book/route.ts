@@ -51,17 +51,50 @@ interface RedditIdea {
 }
 
 // Pen names per category — never use real name for auto-generated books
-const PEN_NAMES: Record<string, string> = {
-  "self-help": "Lena Bergmann",
-  health: "Dr. Kathrin Sommer",
-  productivity: "Markus Stein",
-  finance: "Thomas Weidner",
-  relationships: "Anna Lichtenberg",
-  parenting: "Marie Hofmann",
-  "mental-health": "Sarah Keller",
-  career: "Jan Hartmann",
+interface PenAuthor {
+  name: string;
+  bio: string;
+}
+
+const PEN_AUTHORS: Record<string, PenAuthor> = {
+  "self-help": {
+    name: "Lena Bergmann",
+    bio: "Lena Bergmann arbeitet seit ueber 15 Jahren als Therapeutin und Coach in eigener Praxis in Hamburg. Nach einem Burnout mit Anfang 30 hat sie ihren eigenen Weg zurueck ins Leben gefunden — und begleitet seitdem andere Menschen dabei, dasselbe zu tun. Sie lebt mit ihrem Hund an der Elbe und schreibt am liebsten fruehmorgens.",
+  },
+  health: {
+    name: "Dr. Kathrin Sommer",
+    bio: "Dr. Kathrin Sommer ist Aerztin fuer Allgemeinmedizin mit Schwerpunkt Praevention und Ernaehrungsmedizin. Nach zehn Jahren in der Klinik hat sie sich auf ganzheitliche Gesundheitsberatung spezialisiert. Sie schreibt, weil sie findet, dass gute Gesundheitsinformation nicht hinter Fachsprache versteckt sein sollte.",
+  },
+  productivity: {
+    name: "Markus Stein",
+    bio: "Markus Stein hat zehn Jahre lang Technologie-Teams in Berlin geleitet, bevor er sich als Berater fuer Arbeitsorganisation selbststaendig gemacht hat. Er testet Produktivitaetsmethoden am liebsten an sich selbst — und schreibt nur ueber das, was tatsaechlich funktioniert hat. Wenn er nicht schreibt, ist er wahrscheinlich laufen.",
+  },
+  finance: {
+    name: "Thomas Weidner",
+    bio: "Thomas Weidner ist studierter Wirtschaftswissenschaftler und war ueber 12 Jahre in der Finanzbranche taetig — zuletzt als unabhaengiger Finanzberater. Er hat sich darauf spezialisiert, komplexe Finanzthemen so zu erklaeren, dass man kein BWL-Studium dafuer braucht. Er lebt mit seiner Familie in Muenchen.",
+  },
+  relationships: {
+    name: "Anna Lichtenberg",
+    bio: "Anna Lichtenberg ist Paartherapeutin und systemische Beraterin in Koeln. Ihre Arbeit basiert auf ueber 3.000 Beratungsstunden und der Ueberzeugung, dass gute Beziehungen kein Glueck sind, sondern ein Handwerk. Sie schreibt direkt, manchmal unbequem — aber immer mit dem Ziel, dass ihre Leserinnen und Leser ehrlicher miteinander werden.",
+  },
+  parenting: {
+    name: "Marie Hofmann",
+    bio: "Marie Hofmann ist Familienberaterin, dreifache Mutter und lebt in Freiburg. Sie hat Paedagogik studiert, aber das meiste ueber Elternsein von ihren eigenen Kindern gelernt. Ihre Buecher schreibt sie nachts, wenn das Haus endlich still ist — und sie schreibt sie fuer alle Eltern, die sich manchmal fragen, ob sie das Richtige tun.",
+  },
+  "mental-health": {
+    name: "Sarah Keller",
+    bio: "Sarah Keller ist Psychologin und Autorin aus Wien. Sie hat an der Universitaet Wien zu Resilienz und emotionaler Gesundheit geforscht, bevor sie angefangen hat, fuer ein breiteres Publikum zu schreiben. Ihr Antrieb: psychologisches Wissen aus dem Elfenbeinturm holen und dahin bringen, wo es gebraucht wird — in den Alltag.",
+  },
+  career: {
+    name: "Jan Hartmann",
+    bio: "Jan Hartmann hat als Personalberater und Karrierecoach ueber 2.000 Bewerbungsprozesse begleitet — auf beiden Seiten des Schreibtischs. Heute berät er Berufstaetige, die mehr aus ihrem Arbeitsleben machen wollen, ohne sich dabei zu verlieren. Er lebt in Leipzig und flucht regelmaessig ueber schlechte Stellenanzeigen.",
+  },
 };
-const DEFAULT_PEN_NAME = "Luisa Falkner";
+
+const DEFAULT_PEN_AUTHOR: PenAuthor = {
+  name: "Luisa Falkner",
+  bio: "Luisa Falkner ist freie Autorin und lebt in Norddeutschland. Sie schreibt Sachbuecher zu Themen, die sie selbst nicht mehr losgelassen haben — und versucht dabei, die Dinge so zu erklaeren, wie sie sich gewuenscht haette, dass jemand sie ihr erklaert.",
+};
 
 // Cover design presets per category
 interface CoverPreset {
@@ -280,11 +313,11 @@ async function triggerAutoGenerate(
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
-  const penName = PEN_NAMES[idea.category] || DEFAULT_PEN_NAME;
+  const penAuthor = PEN_AUTHORS[idea.category] || DEFAULT_PEN_AUTHOR;
   const preset = COVER_PRESETS[idea.category] || DEFAULT_PRESET;
 
   console.log(
-    `[auto-book] triggering: "${idea.title}" (demand: ${idea.demandScore}, author: ${penName}, cover: ${preset.style})`
+    `[auto-book] triggering: "${idea.title}" (demand: ${idea.demandScore}, author: ${penAuthor.name}, cover: ${preset.style})`
   );
 
   try {
@@ -300,7 +333,8 @@ async function triggerAutoGenerate(
         paper: "a4",
         pageWidth: "15.24cm",
         pageHeight: "22.86cm",
-        author: penName,
+        author: penAuthor.name,
+        authorBio: penAuthor.bio,
         coverStyle: preset.style,
         headingFont: preset.headingFont,
         bodyFont: preset.bodyFont,

@@ -227,6 +227,7 @@ export async function POST(request: NextRequest) {
     pageWidth,
     pageHeight,
     author,
+    authorBio,
     coverStyle,
     headingFont: customHeadingFont,
     bodyFont: customBodyFont,
@@ -242,6 +243,7 @@ export async function POST(request: NextRequest) {
     pageWidth?: string;
     pageHeight?: string;
     author?: string;
+    authorBio?: string;
     coverStyle?: string;
     headingFont?: string;
     bodyFont?: string;
@@ -537,6 +539,7 @@ lang: ${lang}
         coverImage: coverImagePath,
         subtitle: outline.subtitle || undefined,
         authors: [authorName],
+        authorBio: authorBio || undefined,
         lang,
         template,
         paper,

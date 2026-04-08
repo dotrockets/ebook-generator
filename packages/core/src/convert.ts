@@ -27,6 +27,8 @@ export interface ConvertOptions {
   templatePath?: string;
   /** Cover image path */
   coverImage?: string;
+  /** Author bio for back page */
+  authorBio?: string;
   /** Publisher name */
   publisher?: string;
   /** Website URL */
@@ -104,6 +106,7 @@ function buildPandocArgs(options: ConvertOptions, format: string): string[] {
     for (const author of options.authors) {
       args.push(`--variable=authors:${author}`);
     }
+    if (options.authorBio) args.push(`--variable=author-bio:${options.authorBio}`);
     if (options.publisher) args.push(`--variable=publisher:${options.publisher}`);
     if (options.website) args.push(`--variable=website:${options.website}`);
     if (options.copyright) args.push(`--variable=copyright:${options.copyright}`);
