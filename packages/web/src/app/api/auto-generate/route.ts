@@ -26,6 +26,7 @@ interface ChapterOutline {
   title: string;
   sections: string[];
   description: string;
+  chapterStyle?: "story" | "deep-dive" | "practical" | "confrontational" | "reflective";
 }
 
 interface BookOutline {
@@ -54,15 +55,21 @@ Antworte NUR mit diesem JSON-Format, nichts anderes:
     {
       "title": "Kapiteltitel",
       "sections": ["Abschnitt 1", "Abschnitt 2", "Abschnitt 3"],
-      "description": "Kurze Beschreibung was in diesem Kapitel behandelt wird"
+      "description": "Kurze Beschreibung was in diesem Kapitel behandelt wird",
+      "chapterStyle": "story|deep-dive|practical|confrontational|reflective"
     }
   ]
 }
 
 Anforderungen:
-- Titel soll catchy und professionell sein
+- Titel soll catchy und professionell sein — KEIN generischer Coaching-Titel. Denke wie ein Verlags-Lektor: spezifisch, mutig, ueberraschend.
 - Jedes Kapitel hat 2-4 Abschnitte (sections)
-- Praxisorientiert, mit konkreten Tipps
+- WICHTIG: Variiere den chapterStyle zwischen den Kapiteln. Nicht jedes Kapitel gleich aufbauen!
+  - "story": Eroeffnet mit einer konkreten Geschichte/Fallbeispiel, Theorie ergibt sich daraus
+  - "deep-dive": Geht in die Tiefe eines Aspekts, mit Studien/Daten/Gegenargumenten
+  - "practical": Hauptsaechlich Anleitungen, Werkzeuge, Schritt-fuer-Schritt
+  - "confrontational": Hinterfragt gaengige Annahmen, raesoniert gegen den Mainstream
+  - "reflective": Philosophisch, regt zum Nachdenken an, stellt mehr Fragen als Antworten
 - Letztes Kapitel: Zusammenfassung + naechste Schritte
 - KEIN Vorwort/Einleitung als eigenes Kapitel
 - coverImagePrompt: Beschreibe ein stimmungsvolles Hintergrundbild fuer das Cover (auf Englisch, KEIN Text im Bild)`;
@@ -83,19 +90,49 @@ Respond ONLY with this JSON format, nothing else:
     {
       "title": "Chapter Title",
       "sections": ["Section 1", "Section 2", "Section 3"],
-      "description": "Brief description of what this chapter covers"
+      "description": "Brief description of what this chapter covers",
+      "chapterStyle": "story|deep-dive|practical|confrontational|reflective"
     }
   ]
 }
 
 Requirements:
-- Title should be catchy and professional
+- Title should be catchy and professional — NOT generic coaching titles. Think like a publishing editor: specific, bold, surprising.
 - Each chapter has 2-4 sections
-- Practical, with concrete tips
-- coverImagePrompt: describe a mood-setting background image for the cover (in English, NO text in image)
+- IMPORTANT: Vary the chapterStyle between chapters. Don't make every chapter the same!
+  - "story": Opens with a concrete story/case study, theory emerges from it
+  - "deep-dive": Goes deep on one aspect, with studies/data/counterarguments
+  - "practical": Mainly guides, tools, step-by-step
+  - "confrontational": Challenges common assumptions, argues against mainstream
+  - "reflective": Philosophical, thought-provoking, asks more questions than answers
 - Last chapter: Summary + next steps
-- NO foreword/introduction as a standalone chapter`;
+- NO foreword/introduction as a standalone chapter
+- coverImagePrompt: describe a mood-setting background image for the cover (in English, NO text in image)`;
 }
+
+// Style instructions per chapter style — forces structural variety
+const STYLE_INSTRUCTIONS: Record<string, { de: string; en: string }> = {
+  story: {
+    de: `STIL: Eroeffne mit einer konkreten, lebensnahen Geschichte (echte Situation, mit Dialog oder innerem Monolog). Lass die Theorie sich aus der Geschichte ergeben — nicht andersherum. Keine "Stell dir vor..."-Floskeln, sondern eine echte Szene: Ort, Person, was passiert. Der Leser soll sich wiedererkennen. Erst NACH der Geschichte kommt die Einordnung.`,
+    en: `STYLE: Open with a concrete, vivid story (real situation, with dialogue or inner monologue). Let theory emerge from the story — not the other way around. No "imagine..." clichés, write a real scene: place, person, what happens. The reader should recognize themselves. Analysis comes AFTER the story.`,
+  },
+  "deep-dive": {
+    de: `STIL: Geh in die Tiefe. Nenne konkrete Studien, Zahlen, Forschungsergebnisse (mit Jahreszahl und Forscher/Institution). Zeige auch die Gegenposition — was sagen Kritiker? Wo ist die Evidenz duenn? Der Leser soll das Gefuehl haben, etwas wirklich verstanden zu haben, nicht nur einen Ueberblick bekommen.`,
+    en: `STYLE: Go deep. Name specific studies, numbers, research findings (with year and researcher/institution). Also show the counter-position — what do critics say? Where is evidence thin? The reader should feel they truly understood something, not just got an overview.`,
+  },
+  practical: {
+    de: `STIL: Maximal praktisch. Schritt-fuer-Schritt-Anleitungen, konkrete Werkzeuge, Vorlagen, Checklisten. Wenig Theorie — direkt ins Tun. Nenne exakte Zeitangaben, Mengen, Tools. Der Leser soll nach dem Lesen sofort loslegen koennen, ohne noch etwas nachschlagen zu muessen.`,
+    en: `STYLE: Maximum practicality. Step-by-step instructions, concrete tools, templates, checklists. Minimal theory — straight to action. Name exact times, amounts, tools. The reader should be able to start immediately after reading without looking anything up.`,
+  },
+  confrontational: {
+    de: `STIL: Hinterfrage gaengige Annahmen. Beginne mit einer provokanten These oder einem verbreiteten Irrtum und zerlege ihn. Sei direkt, auch unbequem. Nenne konkret, was an populaeren Ratschlaegen falsch oder uebertrieben ist, und warum. Keine Angst vor Reibung — aber immer mit Substanz, nicht nur Provokation.`,
+    en: `STYLE: Challenge common assumptions. Start with a provocative thesis or widespread misconception and dismantle it. Be direct, even uncomfortable. Name specifically what's wrong or exaggerated about popular advice, and why. Don't shy from friction — but always with substance, not just provocation.`,
+  },
+  reflective: {
+    de: `STIL: Philosophisch und nachdenklich. Stelle mehr Fragen als du Antworten gibst. Lade den Leser ein, seine eigene Position zu finden statt deine zu uebernehmen. Nutze Gedankenexperimente, Paradoxien, unerwartete Perspektiven. Weniger "So machst du es richtig" und mehr "Was waere, wenn...?"`,
+    en: `STYLE: Philosophical and reflective. Ask more questions than you give answers. Invite the reader to find their own position rather than adopting yours. Use thought experiments, paradoxes, unexpected perspectives. Less "here's how to do it right" and more "what if...?"`,
+  },
+};
 
 function chapterPrompt(
   topic: string,
@@ -111,6 +148,10 @@ function chapterPrompt(
     ? `\nBisherige Kapitel: ${previousChapterTitles.join(", ")}`
     : "";
 
+  const chapterStyle = chapter.chapterStyle || "practical";
+  const styleInstr = STYLE_INSTRUCTIONS[chapterStyle]?.[lang === "de" ? "de" : "en"]
+    || STYLE_INSTRUCTIONS.practical[lang === "de" ? "de" : "en"];
+
   if (lang === "de") {
     return `Du schreibst Kapitel ${chapterNum} von ${totalChapters} fuer das Ebook "${bookTitle}" zum Thema "${topic}".
 ${context}
@@ -119,16 +160,26 @@ Kapitel ${chapterNum}: "${chapter.title}"
 Abschnitte: ${chapter.sections.join(", ")}
 Beschreibung: ${chapter.description}
 
+${styleInstr}
+
 Anforderungen:
 - Ca. ${wordsPerChapter} Woerter
-- Sprache: Deutsch, warmherzig, empathisch, fachlich fundiert
-- Stil: Locker, direkt, Du-Anrede, mit konkreten Tipps und Beispielen
+- Sprache: Deutsch, Du-Anrede
 - Beginne mit # ${chapter.title} als H1
 - Verwende ## fuer Abschnitte
-- Verwende **fett**, *kursiv*, > Blockquotes, Listen, ggf. eine Tabelle
-- Ende mit praktischen Aktionsschritten oder einer Checkliste
+- Verwende **fett**, *kursiv*, > Blockquotes, Listen — Tabellen nur wenn sie wirklich Sinn ergeben
 - KEINE Ueberleitung zum naechsten Kapitel am Ende
 - WICHTIG: Verwende korrekte deutsche Umlaute (ä, ö, ü, ß) — NIEMALS ae, oe, ue als Ersatz
+
+VERBOTEN (das macht das Buch generisch):
+- "Du bist nicht allein" oder Varianten davon
+- "Stell dir vor..." als Kapiteloeffner
+- "In diesem Kapitel lernst du..."
+- "Lass uns gemeinsam..." / "Lass uns einen Blick werfen..."
+- Saetze die mit "Es ist wichtig zu verstehen, dass..." anfangen
+- Generische Coaching-Phrasen wie "alte Muster loslassen", "in deine Kraft kommen", "dein volles Potenzial entfalten"
+- Unbelegte wissenschaftliche Behauptungen — wenn du eine Studie nennst, nenne Forscher + Jahr. Wenn du keine hast, formuliere ehrlich als Erfahrungswert.
+- Jedes Kapitel mit einer Checkliste oder Aktionsschritten beenden — VARIIERE das Ende: manchmal eine einzelne, praegnante Frage. Manchmal eine Anekdote. Manchmal konkrete Schritte. Manchmal ein Zitat.
 
 Antworte NUR mit dem Markdown-Content dieses Kapitels.`;
   }
@@ -140,15 +191,25 @@ Chapter ${chapterNum}: "${chapter.title}"
 Sections: ${chapter.sections.join(", ")}
 Description: ${chapter.description}
 
+${styleInstr}
+
 Requirements:
 - Approximately ${wordsPerChapter} words
-- Warm, empathetic, well-researched tone
-- Casual, direct style with concrete tips and examples
+- Casual, direct style — address the reader as "you"
 - Start with # ${chapter.title} as H1
 - Use ## for sections
-- Use **bold**, *italic*, > blockquotes, lists, tables where appropriate
-- End with practical action steps or a checklist
+- Use **bold**, *italic*, > blockquotes, lists — tables only when they genuinely add value
 - NO transition to the next chapter at the end
+
+FORBIDDEN (these make the book feel generic/AI):
+- "You are not alone" or variants
+- "Imagine..." as a chapter opener
+- "In this chapter you will learn..."
+- "Let's take a look at..." / "Let's explore..."
+- Sentences starting with "It's important to understand that..."
+- Generic coaching phrases like "unlock your potential", "step into your power", "embrace your journey"
+- Unsubstantiated scientific claims — if you cite a study, name researcher + year. If you have none, be honest and frame it as experiential.
+- Ending every chapter with a checklist or action steps — VARY the ending: sometimes a single sharp question. Sometimes an anecdote. Sometimes concrete steps. Sometimes a quote.
 
 Respond ONLY with the Markdown content of this chapter.`;
 }
