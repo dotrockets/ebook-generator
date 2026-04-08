@@ -196,29 +196,13 @@
       ))
     ]
 
-    // Author top
-    #place(top + center, dy: 2cm)[
-      #text(
-        font: body-font,
-        size: 11pt,
-        fill: text-white,
-        tracking: 0.2em,
-        weight: "bold",
-      )[#upper[#author-text]]
-    ]
-
-    // Accent line top
-    #place(top + center, dy: 2.8cm)[
-      #rect(width: 3cm, height: 2pt, fill: accent-color)
-    ]
-
-    // Giant centered title
-    #place(center)[
+    // Giant centered title (upper third)
+    #place(top + center, dy: 5cm)[
       #block(width: 85%)[
         #align(center)[
           #text(
             font: heading-font,
-            size: if title-len < 20 { 44pt } else if title-len < 35 { 36pt } else { 28pt },
+            size: if title-len < 20 { 42pt } else if title-len < 35 { 34pt } else { 26pt },
             weight: "bold",
             fill: text-white,
           )[#title-text]
@@ -227,7 +211,7 @@
             #v(0.6cm)
             #text(
               font: body-font,
-              size: 14pt,
+              size: 13pt,
               fill: rgb("#ffffffcc"),
             )[#subtitle-text]
           ]
@@ -235,9 +219,21 @@
       ]
     ]
 
-    // Accent bar bottom
-    #place(bottom + center, dy: -1.5cm)[
-      #rect(width: 5cm, height: 3pt, fill: accent-color)
+    // Author + accent at bottom
+    #place(bottom + center, dy: -2.5cm)[
+      #block[
+        #align(center)[
+          #rect(width: 4cm, height: 2pt, fill: accent-color)
+          #v(0.5cm)
+          #text(
+            font: body-font,
+            size: 11pt,
+            fill: text-white,
+            tracking: 0.2em,
+            weight: "bold",
+          )[#upper[#author-text]]
+        ]
+      ]
     ]
   ]
 }
@@ -300,10 +296,10 @@
 
     // Top/bottom accent frame lines
     #place(top + left, dy: 0.6cm, dx: 0.6cm)[
-      #rect(width: calc.min(100% - 1.2cm, 100%), height: 1pt, fill: accent-color)
+      #rect(width: 90%, height: 1pt, fill: accent-color)
     ]
     #place(bottom + left, dy: -0.6cm, dx: 0.6cm)[
-      #rect(width: calc.min(100% - 1.2cm, 100%), height: 1pt, fill: accent-color)
+      #rect(width: 90%, height: 1pt, fill: accent-color)
     ]
   ]
 }
