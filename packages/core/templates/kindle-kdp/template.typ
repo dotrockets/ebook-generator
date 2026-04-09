@@ -514,10 +514,12 @@ $if(back-page)$
 ]
 $if(author-bio)$
 #v(1.2cm)
-#block(width: 75%, inset: 0pt)[
-  #set par(first-line-indent: 0pt, justify: true)
-  #set text(size: 9.5pt, fill: text-secondary)
-  #align(center)[$author-bio$]
+#align(center)[
+  #block(width: 75%, inset: 0pt)[
+    #set par(first-line-indent: 0pt, justify: true)
+    #set text(size: 9.5pt, fill: text-secondary)
+    $author-bio$
+  ]
 ]
 $endif$
 #align(center)[
