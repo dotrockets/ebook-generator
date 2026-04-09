@@ -266,6 +266,7 @@ export async function POST(request: NextRequest) {
     pageHeight,
     author,
     authorBio,
+    authorVoice,
     coverStyle,
     headingFont: customHeadingFont,
     bodyFont: customBodyFont,
@@ -282,6 +283,7 @@ export async function POST(request: NextRequest) {
     pageHeight?: string;
     author?: string;
     authorBio?: string;
+    authorVoice?: string;
     coverStyle?: string;
     headingFont?: string;
     bodyFont?: string;
@@ -482,6 +484,7 @@ export async function POST(request: NextRequest) {
         const chapterMsg = await anthropic.messages.create({
           model: "claude-sonnet-4-20250514",
           max_tokens: chapterMaxTokens,
+          ...(authorVoice ? { system: authorVoice } : {}),
           messages: [
             {
               role: "user",
@@ -509,6 +512,7 @@ export async function POST(request: NextRequest) {
             const contMsg = await anthropic.messages.create({
               model: "claude-sonnet-4-20250514",
               max_tokens: 4000,
+              ...(authorVoice ? { system: authorVoice } : {}),
               messages: [
                 { role: "user", content: chapterPrompt(topic, outline.title, chapter, i + 1, outline.chapters.length, wordsPerChapter, lang, previousTitles) },
                 { role: "assistant", content: chapterText },
