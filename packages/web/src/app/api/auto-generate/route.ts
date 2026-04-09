@@ -551,7 +551,89 @@ authors: [${authorName}]
 lang: ${lang}
 ---`;
 
-      const fullMarkdown = [frontmatter, "", ...chapterTexts].join("\n\n");
+      let assembledChapters = chapterTexts.join("\n\n");
+
+      // Step 3b: Lektorat — AI editorial review of the complete manuscript
+      await send("status", { step: "lektorat", message: "Lektorat läuft..." });
+      console.log(`[auto-generate] starting lektorat pass...`);
+
+      try {
+        const lektoratMsg = await anthropic.messages.create({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 16000,
+          messages: [
+            {
+              role: "user",
+              content: lang === "de"
+                ? `Du bist ein erfahrener deutscher Lektor. Prüfe und korrigiere dieses Ebook-Manuskript.
+
+TITEL: "${outline.title}"
+
+MANUSKRIPT:
+${assembledChapters}
+
+PRÜFE UND KORRIGIERE:
+1. SPRACHE: Konsequent Du-Anrede. KEIN "Sie", "Ihnen", "Ihre" im Fließtext. Ausnahme: direkte Zitate.
+2. ABGEBROCHENE SÄTZE: Wenn ein Kapitel mitten im Satz endet, schreibe den Satz sinnvoll zu Ende.
+3. UMLAUTE: Ersetze ae→ä, oe→ö, ue→ü, ss→ß wo nötig. "ueber"→"über", "fuer"→"für" etc.
+4. AI-FLOSKELN entfernen: "Du bist nicht allein", "Stell dir vor", "In diesem Kapitel", "Lass uns gemeinsam". Ersetze durch natürlichere Formulierungen.
+5. WIEDERHOLUNGEN: Wenn derselbe Gedanke in mehreren Kapiteln fast identisch formuliert wird, kürze oder variiere.
+6. FAKTEN-CHECK: Wenn eine Studie oder ein Forscher genannt wird, prüfe ob die Angabe plausibel klingt. Wenn nicht, entferne die falsche Quellenangabe und formuliere als allgemeine Erkenntnis.
+7. HORIZONTALE LINIEN: Entferne überflüssige --- (maximal 1 pro Kapitel).
+8. LEERE ÜBERSCHRIFTEN: Wenn eine ## Überschrift ohne Inhalt danach kommt, entferne sie.
+9. MARKDOWN: Stelle sicher dass alle # Headings, Listen, Blockquotes korrekt formatiert sind.
+
+WICHTIG:
+- Gib das KOMPLETTE korrigierte Manuskript zurück, nicht nur die Änderungen.
+- Behalte ALLE Kapitel bei, lösche keine Inhalte.
+- Behalte die Markdown-Struktur (# H1, ## H2, > Blockquotes, Listen etc.) exakt bei.
+- Ändere KEINE Kapitelüberschriften.
+- Kürze nicht radikal — nur offensichtliche Wiederholungen und Floskeln.
+
+Antworte NUR mit dem korrigierten Manuskript, kein Kommentar davor oder danach.`
+                : `You are an experienced editor. Review and correct this ebook manuscript.
+
+TITLE: "${outline.title}"
+
+MANUSCRIPT:
+${assembledChapters}
+
+CHECK AND FIX:
+1. ADDRESS: Consistent "you" (informal). No formal address mixed in.
+2. TRUNCATED SENTENCES: If a chapter ends mid-sentence, complete it sensibly.
+3. AI CLICHÉS: Remove "You are not alone", "Imagine...", "In this chapter", "Let's explore". Replace with natural phrasing.
+4. REPETITIONS: If the same idea appears nearly identically in multiple chapters, shorten or vary.
+5. FACT CHECK: If a study or researcher is named, check plausibility. If dubious, remove the citation and rephrase as general knowledge.
+6. HORIZONTAL RULES: Remove excessive --- (max 1 per chapter).
+7. MARKDOWN: Ensure all headings, lists, blockquotes are correctly formatted.
+
+IMPORTANT:
+- Return the COMPLETE corrected manuscript, not just changes.
+- Keep ALL chapters, don't delete content.
+- Keep Markdown structure exactly as-is.
+- Don't change chapter titles.
+
+Respond ONLY with the corrected manuscript.`,
+            },
+          ],
+        });
+
+        const lektoratText = lektoratMsg.content[0].type === "text" ? lektoratMsg.content[0].text : "";
+
+        if (lektoratText.length > assembledChapters.length * 0.5) {
+          // Only use lektorat result if it's substantial (not a truncated mess)
+          assembledChapters = lektoratText;
+          console.log(`[auto-generate] lektorat done, ${lektoratText.split(/\s+/).length} words`);
+          await send("status", { step: "lektorat_done", message: "Lektorat abgeschlossen." });
+        } else {
+          console.warn(`[auto-generate] lektorat returned too little text (${lektoratText.length} vs ${assembledChapters.length}), skipping`);
+        }
+      } catch (lektoratErr) {
+        console.error("[auto-generate] lektorat failed (non-fatal):", lektoratErr);
+        // Continue with unedited text
+      }
+
+      const fullMarkdown = [frontmatter, "", assembledChapters].join("\n\n");
       const totalWords = fullMarkdown.split(/\s+/).length;
 
       // Step 4: Wait for cover and convert to ebook
