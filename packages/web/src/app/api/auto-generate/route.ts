@@ -27,6 +27,7 @@ interface ChapterOutline {
   sections: string[];
   description: string;
   chapterStyle?: "story" | "deep-dive" | "practical" | "confrontational" | "reflective";
+  epigraph?: string;
 }
 
 interface BookOutline {
@@ -59,7 +60,8 @@ Antworte NUR mit diesem JSON-Format, nichts anderes:
       "title": "Kapiteltitel",
       "sections": ["Abschnitt 1", "Abschnitt 2", "Abschnitt 3"],
       "description": "Kurze Beschreibung was in diesem Kapitel behandelt wird",
-      "chapterStyle": "story|deep-dive|practical|confrontational|reflective"
+      "chapterStyle": "story|deep-dive|practical|confrontational|reflective",
+      "epigraph": "Passendes Zitat eines bekannten Autors/Denkers — Name"
     }
   ]
 }
@@ -94,7 +96,8 @@ Respond ONLY with this JSON format, nothing else:
       "title": "Chapter Title",
       "sections": ["Section 1", "Section 2", "Section 3"],
       "description": "Brief description of what this chapter covers",
-      "chapterStyle": "story|deep-dive|practical|confrontational|reflective"
+      "chapterStyle": "story|deep-dive|practical|confrontational|reflective",
+      "epigraph": "Fitting quote by a known author/thinker — Name"
     }
   ]
 }
@@ -166,13 +169,22 @@ Beschreibung: ${chapter.description}
 ${styleInstr}
 
 Anforderungen:
-- Ca. ${wordsPerChapter} Woerter
+- Ca. ${wordsPerChapter} Wörter
 - Sprache: Deutsch, Du-Anrede
 - Beginne mit # ${chapter.title} als H1
-- Verwende ## fuer Abschnitte
-- Verwende **fett**, *kursiv*, > Blockquotes, Listen — Tabellen nur wenn sie wirklich Sinn ergeben
-- KEINE Ueberleitung zum naechsten Kapitel am Ende
+- Verwende ## für Abschnitte
+- KEINE Überleitung zum nächsten Kapitel am Ende
 - WICHTIG: Verwende korrekte deutsche Umlaute (ä, ö, ü, ß) — NIEMALS ae, oe, ue als Ersatz
+
+FORMATIERUNG — nutze diese Elemente gezielt (nicht alle in jedem Kapitel!):
+- **fett** und *kursiv* für Betonungen
+- > Blockquotes für prägnante Zitate oder Kernaussagen (1-2 pro Kapitel, kurz!)
+- Listen für Aufzählungen
+- Tabellen NUR wenn Daten verglichen werden (nicht erzwingen)
+- Tipp-Boxen als Definition-Liste, z.B.:
+  Tipp
+  : Hier steht ein konkreter, praktischer Tipp den der Leser sofort umsetzen kann.
+  Nutze das 1-2 Mal pro Kapitel für die wichtigsten Takeaways. Varianten: "Tipp", "Wichtig", "Achtung", "Auf einen Blick", "Praxis-Check"
 
 VERBOTEN (das macht das Buch generisch):
 - "Du bist nicht allein" oder Varianten davon
@@ -201,8 +213,17 @@ Requirements:
 - Casual, direct style — address the reader as "you"
 - Start with # ${chapter.title} as H1
 - Use ## for sections
-- Use **bold**, *italic*, > blockquotes, lists — tables only when they genuinely add value
 - NO transition to the next chapter at the end
+
+FORMATTING — use these elements strategically (not all in every chapter!):
+- **bold** and *italic* for emphasis
+- > Blockquotes for punchy quotes or key insights (1-2 per chapter, keep short!)
+- Lists for enumerations
+- Tables ONLY when comparing data (don't force them)
+- Tip boxes as definition lists, e.g.:
+  Key Takeaway
+  : A concrete, actionable insight the reader can use immediately.
+  Use 1-2 per chapter for the most important points. Variants: "Tip", "Important", "Warning", "At a Glance", "Quick Check"
 
 FORBIDDEN (these make the book feel generic/AI):
 - "You are not alone" or variants
@@ -460,8 +481,18 @@ export async function POST(request: NextRequest) {
           ],
         });
 
-        const chapterText =
+        let chapterText =
           chapterMsg.content[0].type === "text" ? chapterMsg.content[0].text : "";
+
+        // Insert epigraph after H1 heading if present
+        if (chapter.epigraph) {
+          const h1Match = chapterText.match(/^(#\s+.+\n)/);
+          if (h1Match) {
+            const epigraph = `\n> *${chapter.epigraph}*\n`;
+            chapterText = chapterText.replace(h1Match[0], h1Match[0] + epigraph);
+          }
+        }
+
         chapterTexts.push(chapterText);
         previousTitles.push(chapter.title);
 

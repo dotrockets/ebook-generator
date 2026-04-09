@@ -58,7 +58,9 @@
 )
 
 // === Widow/Orphan control ===
-#show par: set block(breakable: true)
+// Prevent single lines at top/bottom of pages
+#set par(hanging-indent: 0pt)
+#show par: set block(breakable: true, widow: 2, orphan: 2)
 
 // ============================================================
 // FRONT MATTER — no headers, Roman page numbers
@@ -226,9 +228,26 @@ $endif$
 // Chapter number tracker (Typst counter doesn't resolve inside show rules)
 #let chapter-num = state("chapter-num", 0)
 
+// === DROP CAP HELPER ===
+// Creates an elegant initial letter at the start of a chapter
+#let drop-cap(body) = {
+  // Extract first letter and rest of text
+  let s = if type(body) == str { body } else { "" }
+  if s.len() == 0 { return body }
+  let first = s.first()
+  let rest = s.slice(1)
+  grid(
+    columns: (auto, 1fr),
+    column-gutter: 4pt,
+    align: (bottom, bottom),
+    text(font: heading-font, size: 38pt, fill: text-primary, weight: "bold", baseline: -2pt)[#first],
+    text(size: 11pt, fill: text-primary)[#rest],
+  )
+}
+
 // === CHAPTER HEADINGS (H1) ===
 // Chicago Manual convention: recto start, generous top space,
-// chapter number as small-caps label, drop cap on first paragraph
+// chapter number as small-caps label
 #show heading.where(level: 1): it => {
   pagebreak(weak: true, to: "odd")
   // Step chapter counter via state (reliable inside show rules)
@@ -322,30 +341,42 @@ $endif$
   indent: 0.5em,
 )
 
-// === TERMS / DEFINITION LISTS ===
+// === TERMS / DEFINITION LISTS — styled as callout boxes ===
 #show terms: it => {
   block(spacing: 0.7em)[#it]
 }
 #show terms.item: it => {
-  block(spacing: 0.5em)[
-    #text(fill: text-primary, weight: "bold")[#it.term]
-    #if it.description != [] [ — #it.description]
-  ]
-}
-
-// === BLOCK QUOTES — elegant book style ===
-#show quote: it => {
-  v(0.4cm)
+  v(0.3cm)
   block(
     width: 100%,
-    inset: (left: 1.5em, right: 1em, y: 0.3em),
-    stroke: (left: 1.5pt + rule-color),
+    inset: (x: 1.2em, y: 0.8em),
+    stroke: (left: 2.5pt + rule-color, rest: 0.4pt + rgb("#e0e0e0")),
+    radius: (right: 3pt),
+    fill: rgb("#fafafa"),
   )[
-    #set text(fill: text-secondary, style: "italic", size: 10pt)
-    #set par(leading: 0.7em)
+    #set par(first-line-indent: 0pt)
+    #text(size: 9pt, fill: text-secondary, weight: "bold", tracking: 0.08em)[#upper[#it.term]]
+    #v(0.3cm)
+    #text(size: 10pt, fill: text-primary)[#it.description]
+  ]
+  v(0.3cm)
+}
+
+// === BLOCK QUOTES — decorative book style with large quote mark ===
+#show quote: it => {
+  v(0.6cm)
+  block(
+    width: 100%,
+    inset: (left: 2em, right: 1.5em, top: 0.2em, bottom: 0.3em),
+  )[
+    #place(top + left, dx: -1.4em, dy: -0.3em)[
+      #text(font: heading-font, size: 32pt, fill: rule-color)[„]
+    ]
+    #set text(fill: text-secondary, style: "italic", size: 10.5pt)
+    #set par(leading: 0.75em, first-line-indent: 0pt)
     #it.body
   ]
-  v(0.4cm)
+  v(0.6cm)
 }
 
 // === CODE BLOCKS ===
@@ -385,11 +416,15 @@ $endif$
 // Pandoc generates horizontal rules from --- in markdown
 // Elegant centered ornament instead of plain line
 #show line: it => {
-  v(0.8cm)
+  v(1cm)
   align(center)[
-    #text(size: 9pt, fill: rule-color, tracking: 0.5em)[· · ·]
+    #box(width: 1.5cm, height: 0.3pt, fill: rule-color)
+    #h(0.4cm)
+    #text(size: 7pt, fill: rule-color)[✦]
+    #h(0.4cm)
+    #box(width: 1.5cm, height: 0.3pt, fill: rule-color)
   ]
-  v(0.8cm)
+  v(1cm)
 }
 
 // ============================================================
