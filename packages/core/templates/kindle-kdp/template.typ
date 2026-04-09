@@ -64,21 +64,7 @@
 // FRONT MATTER — no headers, Roman page numbers
 // ============================================================
 
-// --- HALF-TITLE PAGE (Schmutztitel, always recto) ---
-#page[
-  #v(1fr)
-  #align(center)[
-    #text(font: heading-font, size: 20pt, fill: text-primary)[
-      $if(title)$$title$$endif$
-    ]
-  ]
-  #v(2fr)
-]
-
-// --- Blank verso ---
-#page[]
-
-// --- TITLE PAGE (always recto) ---
+// --- TITLE PAGE ---
 #page[
   #v(4cm)
   #align(center)[
