@@ -37,7 +37,10 @@ interface BookOutline {
 }
 
 function outlinePrompt(topic: string, pages: number, lang: string): string {
-  const numChapters = Math.max(5, Math.min(8, Math.round(pages / 3)));
+  // Vary chapter count: 5–12 based on page count, with some randomness
+  const base = Math.round(pages / 5);
+  const jitter = Math.floor(Math.random() * 3) - 1; // -1, 0, or +1
+  const numChapters = Math.max(5, Math.min(12, base + jitter));
 
   if (lang === "de") {
     return `Erstelle eine Gliederung fuer ein Ebook zum Thema:
