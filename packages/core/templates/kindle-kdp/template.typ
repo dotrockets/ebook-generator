@@ -68,6 +68,7 @@
 #page[
   #v(4cm)
   #align(center)[
+    #set text(hyphenate: false)
     #text(font: heading-font, size: 30pt, weight: "bold", fill: text-primary)[
       $if(title)$$title$$endif$
     ]
