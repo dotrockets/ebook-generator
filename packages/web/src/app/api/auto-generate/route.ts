@@ -466,8 +466,9 @@ export async function POST(request: NextRequest) {
         // Dynamic max_tokens based on expected words (1.5 tokens/word + buffer)
         const chapterMaxTokens = Math.max(4000, Math.min(Math.ceil(wordsPerChapter * 1.5) + 1000, 16000));
 
+        // Opus for chapter writing — much better prose quality
         const chapterMsg = await anthropic.messages.create({
-          model: "claude-sonnet-4-20250514",
+          model: "claude-opus-4-20250514",
           max_tokens: chapterMaxTokens,
           ...(authorVoice ? { system: authorVoice } : {}),
           messages: [
@@ -495,7 +496,7 @@ export async function POST(request: NextRequest) {
           if (chapterMsg.stop_reason === "max_tokens") {
             console.log(`[auto-generate] chapter ${i + 1} truncated, requesting continuation...`);
             const contMsg = await anthropic.messages.create({
-              model: "claude-sonnet-4-20250514",
+              model: "claude-opus-4-20250514",
               max_tokens: 4000,
               ...(authorVoice ? { system: authorVoice } : {}),
               messages: [
@@ -584,7 +585,7 @@ Return the COMPLETE corrected chapter only.`;
       for (let i = 0; i < chapterTexts.length; i++) {
         try {
           const editMsg = await anthropic.messages.create({
-            model: "claude-sonnet-4-20250514",
+            model: "claude-opus-4-20250514",
             max_tokens: 8000,
             messages: [{ role: "user", content: lektoratPrompt(chapterTexts[i], i) }],
           });
