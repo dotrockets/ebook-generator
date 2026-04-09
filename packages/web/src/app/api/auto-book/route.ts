@@ -59,41 +59,41 @@ interface PenAuthor {
 const PEN_AUTHORS: Record<string, PenAuthor> = {
   "self-help": {
     name: "Lena Bergmann",
-    bio: "Lena Bergmann arbeitet seit ueber 15 Jahren als Therapeutin und Coach in eigener Praxis in Hamburg. Nach einem Burnout mit Anfang 30 hat sie ihren eigenen Weg zurueck ins Leben gefunden — und begleitet seitdem andere Menschen dabei, dasselbe zu tun. Sie lebt mit ihrem Hund an der Elbe und schreibt am liebsten fruehmorgens.",
+    bio: "Lena Bergmann arbeitet seit über 15 Jahren als Therapeutin und Coach in eigener Praxis in Hamburg. Nach einem Burnout mit Anfang 30 hat sie ihren eigenen Weg zurück ins Leben gefunden — und begleitet seitdem andere Menschen dabei, dasselbe zu tun. Sie lebt mit ihrem Hund an der Elbe und schreibt am liebsten frühmorgens.",
   },
   health: {
     name: "Dr. Kathrin Sommer",
-    bio: "Dr. Kathrin Sommer ist Aerztin fuer Allgemeinmedizin mit Schwerpunkt Praevention und Ernaehrungsmedizin. Nach zehn Jahren in der Klinik hat sie sich auf ganzheitliche Gesundheitsberatung spezialisiert. Sie schreibt, weil sie findet, dass gute Gesundheitsinformation nicht hinter Fachsprache versteckt sein sollte.",
+    bio: "Dr. Kathrin Sommer ist Ärztin für Allgemeinmedizin mit Schwerpunkt Prävention und Ernährungsmedizin. Nach zehn Jahren in der Klinik hat sie sich auf ganzheitliche Gesundheitsberatung spezialisiert. Sie schreibt, weil sie findet, dass gute Gesundheitsinformation nicht hinter Fachsprache versteckt sein sollte.",
   },
   productivity: {
     name: "Markus Stein",
-    bio: "Markus Stein hat zehn Jahre lang Technologie-Teams in Berlin geleitet, bevor er sich als Berater fuer Arbeitsorganisation selbststaendig gemacht hat. Er testet Produktivitaetsmethoden am liebsten an sich selbst — und schreibt nur ueber das, was tatsaechlich funktioniert hat. Wenn er nicht schreibt, ist er wahrscheinlich laufen.",
+    bio: "Markus Stein hat zehn Jahre lang Technologie-Teams in Berlin geleitet, bevor er sich als Berater für Arbeitsorganisation selbstständig gemacht hat. Er testet Produktivitätsmethoden am liebsten an sich selbst — und schreibt nur über das, was tatsächlich funktioniert hat. Wenn er nicht schreibt, ist er wahrscheinlich laufen.",
   },
   finance: {
     name: "Thomas Weidner",
-    bio: "Thomas Weidner ist studierter Wirtschaftswissenschaftler und war ueber 12 Jahre in der Finanzbranche taetig — zuletzt als unabhaengiger Finanzberater. Er hat sich darauf spezialisiert, komplexe Finanzthemen so zu erklaeren, dass man kein BWL-Studium dafuer braucht. Er lebt mit seiner Familie in Muenchen.",
+    bio: "Thomas Weidner ist studierter Wirtschaftswissenschaftler und war über 12 Jahre in der Finanzbranche tätig — zuletzt als unabhängiger Finanzberater. Er hat sich darauf spezialisiert, komplexe Finanzthemen so zu erklären, dass man kein BWL-Studium dafür braucht. Er lebt mit seiner Familie in München.",
   },
   relationships: {
     name: "Anna Lichtenberg",
-    bio: "Anna Lichtenberg ist Paartherapeutin und systemische Beraterin in Koeln. Ihre Arbeit basiert auf ueber 3.000 Beratungsstunden und der Ueberzeugung, dass gute Beziehungen kein Glueck sind, sondern ein Handwerk. Sie schreibt direkt, manchmal unbequem — aber immer mit dem Ziel, dass ihre Leserinnen und Leser ehrlicher miteinander werden.",
+    bio: "Anna Lichtenberg ist Paartherapeutin und systemische Beraterin in Köln. Ihre Arbeit basiert auf über 3.000 Beratungsstunden und der Überzeugung, dass gute Beziehungen kein Glück sind, sondern ein Handwerk. Sie schreibt direkt, manchmal unbequem — aber immer mit dem Ziel, dass ihre Leserinnen und Leser ehrlicher miteinander werden.",
   },
   parenting: {
     name: "Marie Hofmann",
-    bio: "Marie Hofmann ist Familienberaterin, dreifache Mutter und lebt in Freiburg. Sie hat Paedagogik studiert, aber das meiste ueber Elternsein von ihren eigenen Kindern gelernt. Ihre Buecher schreibt sie nachts, wenn das Haus endlich still ist — und sie schreibt sie fuer alle Eltern, die sich manchmal fragen, ob sie das Richtige tun.",
+    bio: "Marie Hofmann ist Familienberaterin, dreifache Mutter und lebt in Freiburg. Sie hat Pädagogik studiert, aber das meiste über Elternsein von ihren eigenen Kindern gelernt. Ihre Bücher schreibt sie nachts, wenn das Haus endlich still ist — und sie schreibt sie für alle Eltern, die sich manchmal fragen, ob sie das Richtige tun.",
   },
   "mental-health": {
     name: "Sarah Keller",
-    bio: "Sarah Keller ist Psychologin und Autorin aus Wien. Sie hat an der Universitaet Wien zu Resilienz und emotionaler Gesundheit geforscht, bevor sie angefangen hat, fuer ein breiteres Publikum zu schreiben. Ihr Antrieb: psychologisches Wissen aus dem Elfenbeinturm holen und dahin bringen, wo es gebraucht wird — in den Alltag.",
+    bio: "Sarah Keller ist Psychologin und Autorin aus Wien. Sie hat an der Universität Wien zu Resilienz und emotionaler Gesundheit geforscht, bevor sie angefangen hat, für ein breiteres Publikum zu schreiben. Ihr Antrieb: psychologisches Wissen aus dem Elfenbeinturm holen und dahin bringen, wo es gebraucht wird — in den Alltag.",
   },
   career: {
     name: "Jan Hartmann",
-    bio: "Jan Hartmann hat als Personalberater und Karrierecoach ueber 2.000 Bewerbungsprozesse begleitet — auf beiden Seiten des Schreibtischs. Heute berät er Berufstaetige, die mehr aus ihrem Arbeitsleben machen wollen, ohne sich dabei zu verlieren. Er lebt in Leipzig und flucht regelmaessig ueber schlechte Stellenanzeigen.",
+    bio: "Jan Hartmann hat als Personalberater und Karrierecoach über 2.000 Bewerbungsprozesse begleitet — auf beiden Seiten des Schreibtischs. Heute berät er Berufstätige, die mehr aus ihrem Arbeitsleben machen wollen, ohne sich dabei zu verlieren. Er lebt in Leipzig und flucht regelmäßig über schlechte Stellenanzeigen.",
   },
 };
 
 const DEFAULT_PEN_AUTHOR: PenAuthor = {
   name: "Luisa Falkner",
-  bio: "Luisa Falkner ist freie Autorin und lebt in Norddeutschland. Sie schreibt Sachbuecher zu Themen, die sie selbst nicht mehr losgelassen haben — und versucht dabei, die Dinge so zu erklaeren, wie sie sich gewuenscht haette, dass jemand sie ihr erklaert.",
+  bio: "Luisa Falkner ist freie Autorin und lebt in Norddeutschland. Sie schreibt Sachbücher zu Themen, die sie selbst nicht mehr losgelassen haben — und versucht dabei, die Dinge so zu erklären, wie sie sich gewünscht hätte, dass jemand sie ihr erklärt.",
 };
 
 // Cover design presets per category

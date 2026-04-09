@@ -145,7 +145,7 @@ $endif$
 
   Alle Rechte vorbehalten. Kein Teil dieses Buches darf ohne
   vorherige schriftliche Genehmigung des Autors in irgendeiner Form
-  reproduziert, gespeichert oder uebertragen werden.
+  reproduziert, gespeichert oder übertragen werden.
 
 $if(publisher)$
   #v(0.3cm)
@@ -407,7 +407,7 @@ $body$
   #text(size: 10pt, fill: rule-color)[--- ✦ ---]
   #v(1cm)
   #text(font: heading-font, size: 16pt, fill: text-primary)[
-    Ihre Meinung zaehlt!
+    Ihre Meinung zählt!
   ]
   #v(1cm)
   #set par(first-line-indent: 0pt, justify: false)
@@ -416,13 +416,13 @@ $body$
     #align(center)[
       Ehrliche Rezensionen helfen anderen Lesern, dieses Buch zu entdecken.
       Wenn Ihnen _$if(title)$$title$$endif$_ gefallen hat,
-      wuerden wir uns sehr ueber eine kurze Bewertung auf Amazon freuen.
+      würden wir uns sehr über eine kurze Bewertung auf Amazon freuen.
 
       #v(0.8cm)
-      Schon ein oder zwei Saetze machen einen grossen Unterschied.
+      Schon ein oder zwei Sätze machen einen großen Unterschied.
 
       #v(1.2cm)
-      #text(size: 9pt, fill: rule-color)[Vielen Dank fuer Ihre Unterstuetzung!]
+      #text(size: 9pt, fill: rule-color)[Vielen Dank für Ihre Unterstützung!]
     ]
   ]
 ]
@@ -438,14 +438,14 @@ $if(website)$
   #text(size: 10pt, fill: rule-color)[--- ✦ ---]
   #v(1cm)
   #text(font: heading-font, size: 16pt, fill: text-primary)[
-    Gratis fuer Sie
+    Gratis für Sie
   ]
   #v(1cm)
   #set par(first-line-indent: 0pt, justify: false)
   #block(width: 80%)[
     #set text(size: 10pt, fill: text-secondary)
     #align(center)[
-      Als Dankeschoen fuer den Kauf dieses Buches erhalten Sie
+      Als Dankeschön für den Kauf dieses Buches erhalten Sie
       kostenloses Bonusmaterial:
 
       #v(0.6cm)
@@ -456,7 +456,7 @@ $if(website)$
 
       #v(1cm)
       #set text(size: 9pt, fill: text-secondary)
-      Besuchen Sie *$website$* fuer den Download.
+      Besuchen Sie *$website$* für den Download.
     ]
   ]
 ]
@@ -468,7 +468,7 @@ $if(back-page)$
 #pagebreak(to: "odd")
 #v(5cm)
 #align(center)[
-  #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em)[UEBER DEN AUTOR]
+  #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em)[ÜBER DEN AUTOR]
   #v(0.6cm)
   #text(size: 10pt, fill: rule-color)[--- ✦ ---]
   #v(0.8cm)

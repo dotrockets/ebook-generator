@@ -129,7 +129,7 @@ $if(disclaimer)$
 $endif$
 
   #v(0.3cm)
-  _Dieses Dokument ist fuer beidseitigen Druck optimiert (Bindung an langer Kante)._
+  _Dieses Dokument ist für beidseitigen Druck optimiert (Bindung an langer Kante)._
 ]
 
 // === TABLE OF CONTENTS ===
