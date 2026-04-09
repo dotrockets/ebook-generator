@@ -551,87 +551,67 @@ authors: [${authorName}]
 lang: ${lang}
 ---`;
 
-      let assembledChapters = chapterTexts.join("\n\n");
-
-      // Step 3b: Lektorat — AI editorial review of the complete manuscript
+      // Step 3b: Lektorat — AI editorial review per chapter (avoids timeout on long manuscripts)
       await send("status", { step: "lektorat", message: "Lektorat läuft..." });
-      console.log(`[auto-generate] starting lektorat pass...`);
+      console.log(`[auto-generate] starting lektorat pass (${chapterTexts.length} chapters)...`);
 
-      try {
-        const lektoratMsg = await anthropic.messages.create({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 16000,
-          messages: [
-            {
-              role: "user",
-              content: lang === "de"
-                ? `Du bist ein erfahrener deutscher Lektor. Prüfe und korrigiere dieses Ebook-Manuskript.
+      const lektoratPrompt = (chapterMd: string, chapterIdx: number) => lang === "de"
+        ? `Du bist ein erfahrener deutscher Lektor. Korrigiere dieses Kapitel (${chapterIdx + 1}/${chapterTexts.length}) aus dem Ebook "${outline.title}".
 
-TITEL: "${outline.title}"
+KAPITEL:
+${chapterMd}
 
-MANUSKRIPT:
-${assembledChapters}
+KORRIGIERE:
+1. Du-Anrede konsequent. KEIN "Sie/Ihnen/Ihre" im Fließtext (Ausnahme: direkte Zitate).
+2. Abgebrochene Sätze sinnvoll beenden.
+3. Umlaute: ae→ä, oe→ö, ue→ü wo nötig.
+4. AI-Floskeln ersetzen: "Du bist nicht allein", "Stell dir vor...", "In diesem Kapitel", "Lass uns gemeinsam".
+5. Unbelegte Studien: Wenn Forscher/Jahr unplausibel klingt, als allgemeine Erkenntnis umformulieren.
+6. Überflüssige --- entfernen (max 1 pro Kapitel).
+7. Markdown-Struktur sicherstellen (# ## > Listen etc.).
 
-PRÜFE UND KORRIGIERE:
-1. SPRACHE: Konsequent Du-Anrede. KEIN "Sie", "Ihnen", "Ihre" im Fließtext. Ausnahme: direkte Zitate.
-2. ABGEBROCHENE SÄTZE: Wenn ein Kapitel mitten im Satz endet, schreibe den Satz sinnvoll zu Ende.
-3. UMLAUTE: Ersetze ae→ä, oe→ö, ue→ü, ss→ß wo nötig. "ueber"→"über", "fuer"→"für" etc.
-4. AI-FLOSKELN entfernen: "Du bist nicht allein", "Stell dir vor", "In diesem Kapitel", "Lass uns gemeinsam". Ersetze durch natürlichere Formulierungen.
-5. WIEDERHOLUNGEN: Wenn derselbe Gedanke in mehreren Kapiteln fast identisch formuliert wird, kürze oder variiere.
-6. FAKTEN-CHECK: Wenn eine Studie oder ein Forscher genannt wird, prüfe ob die Angabe plausibel klingt. Wenn nicht, entferne die falsche Quellenangabe und formuliere als allgemeine Erkenntnis.
-7. HORIZONTALE LINIEN: Entferne überflüssige --- (maximal 1 pro Kapitel).
-8. LEERE ÜBERSCHRIFTEN: Wenn eine ## Überschrift ohne Inhalt danach kommt, entferne sie.
-9. MARKDOWN: Stelle sicher dass alle # Headings, Listen, Blockquotes korrekt formatiert sind.
+REGELN:
+- Gib das KOMPLETTE korrigierte Kapitel zurück.
+- Ändere KEINE Überschriften.
+- Kürze nicht radikal.
+- Antworte NUR mit dem korrigierten Kapitel.`
+        : `You are an experienced editor. Correct this chapter (${chapterIdx + 1}/${chapterTexts.length}) from "${outline.title}".
 
-WICHTIG:
-- Gib das KOMPLETTE korrigierte Manuskript zurück, nicht nur die Änderungen.
-- Behalte ALLE Kapitel bei, lösche keine Inhalte.
-- Behalte die Markdown-Struktur (# H1, ## H2, > Blockquotes, Listen etc.) exakt bei.
-- Ändere KEINE Kapitelüberschriften.
-- Kürze nicht radikal — nur offensichtliche Wiederholungen und Floskeln.
+CHAPTER:
+${chapterMd}
 
-Antworte NUR mit dem korrigierten Manuskript, kein Kommentar davor oder danach.`
-                : `You are an experienced editor. Review and correct this ebook manuscript.
+FIX: consistent "you", truncated sentences, AI clichés, dubious citations, excess ---, markdown structure.
+Return the COMPLETE corrected chapter only.`;
 
-TITLE: "${outline.title}"
-
-MANUSCRIPT:
-${assembledChapters}
-
-CHECK AND FIX:
-1. ADDRESS: Consistent "you" (informal). No formal address mixed in.
-2. TRUNCATED SENTENCES: If a chapter ends mid-sentence, complete it sensibly.
-3. AI CLICHÉS: Remove "You are not alone", "Imagine...", "In this chapter", "Let's explore". Replace with natural phrasing.
-4. REPETITIONS: If the same idea appears nearly identically in multiple chapters, shorten or vary.
-5. FACT CHECK: If a study or researcher is named, check plausibility. If dubious, remove the citation and rephrase as general knowledge.
-6. HORIZONTAL RULES: Remove excessive --- (max 1 per chapter).
-7. MARKDOWN: Ensure all headings, lists, blockquotes are correctly formatted.
-
-IMPORTANT:
-- Return the COMPLETE corrected manuscript, not just changes.
-- Keep ALL chapters, don't delete content.
-- Keep Markdown structure exactly as-is.
-- Don't change chapter titles.
-
-Respond ONLY with the corrected manuscript.`,
-            },
-          ],
-        });
-
-        const lektoratText = lektoratMsg.content[0].type === "text" ? lektoratMsg.content[0].text : "";
-
-        if (lektoratText.length > assembledChapters.length * 0.5) {
-          // Only use lektorat result if it's substantial (not a truncated mess)
-          assembledChapters = lektoratText;
-          console.log(`[auto-generate] lektorat done, ${lektoratText.split(/\s+/).length} words`);
-          await send("status", { step: "lektorat_done", message: "Lektorat abgeschlossen." });
-        } else {
-          console.warn(`[auto-generate] lektorat returned too little text (${lektoratText.length} vs ${assembledChapters.length}), skipping`);
+      const editedChapters: string[] = [];
+      for (let i = 0; i < chapterTexts.length; i++) {
+        try {
+          const editMsg = await anthropic.messages.create({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 8000,
+            messages: [{ role: "user", content: lektoratPrompt(chapterTexts[i], i) }],
+          });
+          const editedText = editMsg.content[0].type === "text" ? editMsg.content[0].text : "";
+          if (editedText.length > chapterTexts[i].length * 0.5) {
+            editedChapters.push(editedText);
+            console.log(`[auto-generate] lektorat chapter ${i + 1}/${chapterTexts.length} done`);
+          } else {
+            editedChapters.push(chapterTexts[i]);
+            console.warn(`[auto-generate] lektorat chapter ${i + 1} returned too little, keeping original`);
+          }
+        } catch {
+          editedChapters.push(chapterTexts[i]);
+          console.warn(`[auto-generate] lektorat chapter ${i + 1} failed, keeping original`);
         }
-      } catch (lektoratErr) {
-        console.error("[auto-generate] lektorat failed (non-fatal):", lektoratErr);
-        // Continue with unedited text
+        await send("status", {
+          step: "lektorat",
+          message: `Lektorat: Kapitel ${i + 1}/${chapterTexts.length}`,
+        });
       }
+      console.log(`[auto-generate] lektorat complete`);
+      await send("status", { step: "lektorat_done", message: "Lektorat abgeschlossen." });
+
+      let assembledChapters = editedChapters.join("\n\n");
 
       const fullMarkdown = [frontmatter, "", assembledChapters].join("\n\n");
       const totalWords = fullMarkdown.split(/\s+/).length;
