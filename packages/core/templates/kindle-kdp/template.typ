@@ -218,7 +218,7 @@ $endif$
       ]
     }
     v(-4pt)
-    line(length: 100%, stroke: 0.15pt + rule-color)
+    box(width: 100%, height: 0.15pt, fill: rule-color)
   },
   footer: none,
 )
@@ -226,22 +226,9 @@ $endif$
 // Chapter number tracker (Typst counter doesn't resolve inside show rules)
 #let chapter-num = state("chapter-num", 0)
 
-// === DROP CAP HELPER ===
-// Creates an elegant initial letter at the start of a chapter
-#let drop-cap(body) = {
-  // Extract first letter and rest of text
-  let s = if type(body) == str { body } else { "" }
-  if s.len() == 0 { return body }
-  let first = s.first()
-  let rest = s.slice(1)
-  grid(
-    columns: (auto, 1fr),
-    column-gutter: 4pt,
-    align: (bottom, bottom),
-    text(font: heading-font, size: 38pt, fill: text-primary, weight: "bold", baseline: -2pt)[#first],
-    text(size: 11pt, fill: text-primary)[#rest],
-  )
-}
+// === DROP CAP STATE ===
+// Tracks whether the next paragraph should get a drop cap
+#let is-first-para = state("first-para", false)
 
 // === CHAPTER HEADINGS (H1) ===
 // Chicago Manual convention: recto start, generous top space,
@@ -273,6 +260,8 @@ $endif$
     ]
   ]
   v(2cm)
+  // Flag: next paragraph gets a drop cap
+  is-first-para.update(true)
   // First paragraph after heading: no indent (typographic convention)
   set par(first-line-indent: 0pt)
 }
@@ -300,6 +289,20 @@ $endif$
     ]
   ]
   set par(first-line-indent: 0pt)
+}
+
+// === FIRST PARAGRAPH — small-caps opening for chapter openers ===
+#show par: it => {
+  context {
+    if is-first-para.get() {
+      is-first-para.update(false)
+      set par(first-line-indent: 0pt)
+      set text(tracking: 0.03em)
+      smallcaps(it)
+    } else {
+      it
+    }
+  }
 }
 
 // === INLINE STYLES ===
@@ -344,20 +347,37 @@ $endif$
   block(spacing: 0.7em)[#it]
 }
 #show terms.item: it => {
-  v(0.3cm)
+  // Determine icon and border weight based on label
+  let label = lower(repr(it.term))
+  let icon = "◆"
+  let border-weight = 2.5pt
+  if label.contains("achtung") or label.contains("warnung") or label.contains("warning") {
+    icon = "▲"
+    border-weight = 3pt
+  } else if label.contains("wichtig") or label.contains("important") {
+    icon = "▸"
+    border-weight = 3pt
+  } else if label.contains("check") or label.contains("blick") {
+    icon = "✓"
+  } else if label.contains("tipp") or label.contains("tip") {
+    icon = "◆"
+  }
+  v(0.4cm)
   block(
     width: 100%,
     inset: (x: 1.2em, y: 0.8em),
-    stroke: (left: 2.5pt + rule-color, rest: 0.4pt + rgb("#e0e0e0")),
+    stroke: (left: border-weight + rule-color, rest: 0.4pt + rgb("#e0e0e0")),
     radius: (right: 3pt),
     fill: rgb("#fafafa"),
   )[
     #set par(first-line-indent: 0pt)
-    #text(size: 9pt, fill: text-secondary, weight: "bold", tracking: 0.08em)[#upper[#it.term]]
+    #text(size: 8.5pt, fill: rule-color)[#icon]
+    #h(0.4em)
+    #text(size: 8.5pt, fill: text-secondary, weight: "bold", tracking: 0.1em)[#upper[#it.term]]
     #v(0.3cm)
     #text(size: 10pt, fill: text-primary)[#it.description]
   ]
-  v(0.3cm)
+  v(0.4cm)
 }
 
 // === BLOCK QUOTES — decorative book style with large quote mark ===
@@ -438,12 +458,12 @@ $body$
 #pagebreak(to: "odd")
 #v(5cm)
 #align(center)[
-  #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em)[HAT IHNEN DIESES BUCH GEFALLEN?]
+  #text(size: 7.5pt, fill: text-secondary, tracking: 0.35em)[HAT DIR DIESES BUCH GEFALLEN?]
   #v(0.6cm)
   #text(size: 10pt, fill: rule-color)[--- ✦ ---]
   #v(1cm)
   #text(font: heading-font, size: 16pt, fill: text-primary)[
-    Ihre Meinung zählt!
+    Deine Meinung zählt!
   ]
   #v(1cm)
   #set par(first-line-indent: 0pt, justify: false)
@@ -451,14 +471,14 @@ $body$
     #set text(size: 10pt, fill: text-secondary)
     #align(center)[
       Ehrliche Rezensionen helfen anderen Lesern, dieses Buch zu entdecken.
-      Wenn Ihnen _$if(title)$$title$$endif$_ gefallen hat,
+      Wenn dir _$if(title)$$title$$endif$_ gefallen hat,
       würden wir uns sehr über eine kurze Bewertung auf Amazon freuen.
 
       #v(0.8cm)
       Schon ein oder zwei Sätze machen einen großen Unterschied.
 
       #v(1.2cm)
-      #text(size: 9pt, fill: rule-color)[Vielen Dank für Ihre Unterstützung!]
+      #text(size: 9pt, fill: rule-color)[Vielen Dank für deine Unterstützung!]
     ]
   ]
 ]
@@ -474,14 +494,14 @@ $if(website)$
   #text(size: 10pt, fill: rule-color)[--- ✦ ---]
   #v(1cm)
   #text(font: heading-font, size: 16pt, fill: text-primary)[
-    Gratis für Sie
+    Gratis für dich
   ]
   #v(1cm)
   #set par(first-line-indent: 0pt, justify: false)
   #block(width: 80%)[
     #set text(size: 10pt, fill: text-secondary)
     #align(center)[
-      Als Dankeschön für den Kauf dieses Buches erhalten Sie
+      Als Dankeschön für den Kauf dieses Buches erhältst du
       kostenloses Bonusmaterial:
 
       #v(0.6cm)
@@ -492,7 +512,7 @@ $if(website)$
 
       #v(1cm)
       #set text(size: 9pt, fill: text-secondary)
-      Besuchen Sie *$website$* für den Download.
+      Besuch *$website$* für den Download.
     ]
   ]
 ]

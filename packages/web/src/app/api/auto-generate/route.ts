@@ -194,7 +194,9 @@ VERBOTEN (das macht das Buch generisch):
 - Saetze die mit "Es ist wichtig zu verstehen, dass..." anfangen
 - Generische Coaching-Phrasen wie "alte Muster loslassen", "in deine Kraft kommen", "dein volles Potenzial entfalten"
 - Unbelegte wissenschaftliche Behauptungen — wenn du eine Studie nennst, nenne Forscher + Jahr. Wenn du keine hast, formuliere ehrlich als Erfahrungswert.
-- Jedes Kapitel mit einer Checkliste oder Aktionsschritten beenden — VARIIERE das Ende: manchmal eine einzelne, praegnante Frage. Manchmal eine Anekdote. Manchmal konkrete Schritte. Manchmal ein Zitat.
+- Jedes Kapitel mit einer Checkliste oder Aktionsschritten beenden — VARIIERE das Ende: manchmal eine einzelne, prägnante Frage. Manchmal eine Anekdote. Manchmal konkrete Schritte. Manchmal ein Zitat.
+- Horizontale Trennlinien (---) — verwende MAXIMAL eine pro Kapitel, nur bei einem echten Themenwechsel. Nicht nach jedem Abschnitt!
+- Das Kapitel MUSS vollständig sein. Schreibe es bis zum Ende durch. Kein abruptes Abbrechen.
 
 Antworte NUR mit dem Markdown-Content dieses Kapitels.`;
   }
@@ -234,6 +236,8 @@ FORBIDDEN (these make the book feel generic/AI):
 - Generic coaching phrases like "unlock your potential", "step into your power", "embrace your journey"
 - Unsubstantiated scientific claims — if you cite a study, name researcher + year. If you have none, be honest and frame it as experiential.
 - Ending every chapter with a checklist or action steps — VARY the ending: sometimes a single sharp question. Sometimes an anecdote. Sometimes concrete steps. Sometimes a quote.
+- Horizontal rules (---) — use AT MOST one per chapter, only for a real topic shift. Not after every section!
+- The chapter MUST be complete. Write it through to the end. No abrupt cutoffs.
 
 Respond ONLY with the Markdown content of this chapter.`;
 }
@@ -462,9 +466,12 @@ export async function POST(request: NextRequest) {
           message: `Kapitel ${i + 1}/${outline.chapters.length}: ${chapter.title}`,
         });
 
+        // Dynamic max_tokens based on expected words (1.5 tokens/word + buffer)
+        const chapterMaxTokens = Math.max(4000, Math.min(Math.ceil(wordsPerChapter * 1.5) + 1000, 16000));
+
         const chapterMsg = await anthropic.messages.create({
           model: "claude-sonnet-4-20250514",
-          max_tokens: 4000,
+          max_tokens: chapterMaxTokens,
           messages: [
             {
               role: "user",
@@ -485,6 +492,27 @@ export async function POST(request: NextRequest) {
         let chapterText =
           chapterMsg.content[0].type === "text" ? chapterMsg.content[0].text : "";
 
+        // If truncated, request continuation
+        if (chapterMsg.stop_reason === "max_tokens" || chapterMsg.stop_reason === "end_turn" && !chapterText.trimEnd().match(/[.!?»"\u201D]\s*$/)) {
+          if (chapterMsg.stop_reason === "max_tokens") {
+            console.log(`[auto-generate] chapter ${i + 1} truncated, requesting continuation...`);
+            const contMsg = await anthropic.messages.create({
+              model: "claude-sonnet-4-20250514",
+              max_tokens: 4000,
+              messages: [
+                { role: "user", content: chapterPrompt(topic, outline.title, chapter, i + 1, outline.chapters.length, wordsPerChapter, lang, previousTitles) },
+                { role: "assistant", content: chapterText },
+                { role: "user", content: "Das Kapitel wurde abgeschnitten. Bitte schreibe es nahtlos zu Ende — beginne exakt dort wo du aufgehört hast, ohne Wiederholung. Nur der fehlende Rest." },
+              ],
+            });
+            const contText = contMsg.content[0].type === "text" ? contMsg.content[0].text : "";
+            if (contText) {
+              chapterText = chapterText + "\n" + contText;
+              console.log(`[auto-generate] chapter ${i + 1} continued, +${contText.split(/\s+/).length} words`);
+            }
+          }
+        }
+
         // Insert epigraph after H1 heading if present
         if (chapter.epigraph) {
           const h1Match = chapterText.match(/^(#\s+.+\n)/);
@@ -492,6 +520,13 @@ export async function POST(request: NextRequest) {
             const epigraph = `\n> *${chapter.epigraph}*\n`;
             chapterText = chapterText.replace(h1Match[0], h1Match[0] + epigraph);
           }
+        }
+
+        // Strip excessive horizontal rules (max 2 per chapter)
+        const parts = chapterText.split(/\n---\n/);
+        if (parts.length > 3) {
+          // Keep first 2 scene breaks, remove the rest
+          chapterText = parts.slice(0, 3).join("\n---\n") + "\n" + parts.slice(3).join("\n\n");
         }
 
         chapterTexts.push(chapterText);

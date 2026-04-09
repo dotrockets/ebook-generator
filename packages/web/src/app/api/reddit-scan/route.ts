@@ -231,9 +231,13 @@ async function analyzeWithClaude(posts: RedditPost[]): Promise<unknown[]> {
   console.log(`[reddit-scan] analyzing ${posts.length} posts with Claude...`);
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
-    max_tokens: 6000,
+    max_tokens: 12000,
     messages: [{ role: "user", content: buildAnalysisPrompt(posts) }],
   });
+
+  if (message.stop_reason === "max_tokens") {
+    console.warn("[reddit-scan] Claude response was truncated — JSON may be incomplete");
+  }
 
   const text =
     message.content[0].type === "text" ? message.content[0].text : "";
@@ -242,7 +246,16 @@ async function analyzeWithClaude(posts: RedditPost[]): Promise<unknown[]> {
     .replace(/```/g, "")
     .trim();
   const ideas = JSON.parse(jsonStr);
-  console.log(`[reddit-scan] ${ideas.length} ebook ideas generated`);
+
+  // Validate demandScores
+  for (const idea of ideas) {
+    if (typeof idea.demandScore !== "number" || idea.demandScore < 1 || idea.demandScore > 100) {
+      console.warn(`[reddit-scan] "${idea.title}" has invalid demandScore: ${idea.demandScore}, setting to 50`);
+      idea.demandScore = 50;
+    }
+  }
+
+  console.log(`[reddit-scan] ${ideas.length} ideas, scores: ${ideas.map((i: { demandScore: number }) => i.demandScore).join(", ")}`);
   return ideas;
 }
 
