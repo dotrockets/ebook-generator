@@ -249,7 +249,8 @@ $endif$
     // Ornamental divider
     #text(size: 10pt, fill: rule-color)[--- ✦ ---]
     #v(0.6cm)
-    // Chapter title
+    // Chapter title — no hyphenation in headings
+    #set text(hyphenate: false)
     #text(font: heading-font, size: 22pt, weight: "bold", fill: text-primary, tracking: 0.02em)[
       #it.body
     ]
@@ -263,6 +264,7 @@ $endif$
 #show heading.where(level: 2): it => {
   v(1.8cm)
   block(below: 0.7cm, above: 0pt)[
+    #set text(hyphenate: false)
     #text(font: heading-font, size: 14pt, weight: "bold", fill: text-primary)[#it.body]
     #v(0.2cm)
     #box(width: 1.5cm, height: 0.3pt, fill: rule-color)
@@ -275,6 +277,7 @@ $endif$
 #show heading.where(level: 3): it => {
   v(1.2cm)
   block(below: 0.5cm)[
+    #set text(hyphenate: false)
     #text(size: 11pt, weight: "bold", fill: text-primary, tracking: 0.03em)[
       #it.body
     ]
