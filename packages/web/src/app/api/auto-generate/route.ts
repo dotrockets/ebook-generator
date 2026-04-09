@@ -166,12 +166,15 @@ Beschreibung: ${chapter.description}
 
 ${styleInstr}
 
-STIMME UND TON:
-- Schreibe wie ein Mensch, der sich wirklich mit dem Thema auskennt und einem Freund davon erzählt.
-- Hab eine Meinung. Sag auch mal "Das halte ich für Quatsch" oder "Hier bin ich unsicher".
-- Schreibe NICHT belehrend. Kein Lehrbuch-Ton. Kein Coach-Ton.
-- Brich deine eigenen Regeln gelegentlich. Echte Autoren sind nicht immer konsistent.
-- Schreibe mal einen kurzen Satz. Dann einen langen. Variiere das Tempo.
+INHALTLICHE QUALITÄT — das wichtigste Kriterium:
+- Jedes Kapitel MUSS mindestens einen Gedanken enthalten, den der Leser noch NICHT kennt. Keine Wiederholung von Allgemeinwissen. Wenn das Thema "ETFs für Anfänger" ist, schreibe nicht zum 1000. Mal "ETFs sind günstig und diversifiziert" — schreibe stattdessen über Fallstricke, Gegenargumente, Randthemen die Google nicht sofort ausspuckt.
+- Nenne konkrete Zahlen, Produkte, Anbieter wo es sinnvoll ist. Ein Fachautor würde "25€ im Monat" sagen, nicht "ein kleinerer Betrag". Wenn sich Zahlen ändern können, schreibe "(Stand 2026, aktuelle Werte prüfen)".
+- Widersprich auch mal der gängigen Meinung. Nicht jeden Mainstream-Rat nachplappern.
+
+STIMME:
+- Schreibe wie ein Mensch der sich auskennt. Nicht belehrend, nicht coachig.
+- Hab eine Meinung und steh dazu.
+- Variiere Satzlänge und Tempo.
 
 Anforderungen:
 - Ca. ${wordsPerChapter} Wörter
@@ -179,28 +182,22 @@ Anforderungen:
 - Beginne mit # ${chapter.title} als H1
 - Verwende ## für Abschnitte
 - KEINE Überleitung zum nächsten Kapitel am Ende
-- WICHTIG: Verwende korrekte deutsche Umlaute (ä, ö, ü, ß) — NIEMALS ae, oe, ue als Ersatz
+- Korrekte deutsche Umlaute (ä, ö, ü, ß)
 - Das Kapitel MUSS vollständig sein. Kein abruptes Abbrechen.
 
-FORMATIERUNG — sparsam einsetzen:
-- **fett** und *kursiv* für Betonungen
-- > Blockquotes NUR für echte Zitate von echten Menschen (mit Name). KEINE erfundenen Zitate.
-- Listen nur wenn es wirklich eine Aufzählung ist, nicht als Textstruktur-Krücke
-- Tabellen NUR wenn Daten verglichen werden
-- Tipp-Boxen (max 1 pro Kapitel, nicht in jedem!) als Definition-Liste:
-  Tipp
-  : Konkreter, praktischer Tipp.
-- Horizontale Trennlinien (---) — maximal 1 pro Kapitel
+FORMATIERUNG — sparsam:
+- Listen nur für echte Aufzählungen, nicht als Strukturkrücke
+- Tabellen nur für Datenvergleiche
+- Tipp-Boxen maximal 1 pro Kapitel als Definition-Liste
+- Horizontale Trennlinien maximal 1 pro Kapitel
 
-VERBOTEN — diese Dinge entlarven das Buch sofort als KI-generiert:
-- ERFUNDENE FALLBEISPIELE mit Namen: KEINE "Familie Müller", KEINE "Petra, 43, Bankkauffrau". Wenn du ein Beispiel brauchst, schreibe "Jemand den ich beraten habe" oder "Ein typisches Szenario" — NIEMALS ausgedachte Personen mit Beruf, Alter, Familienstand.
-- "Stell dir vor..." / "Du bist nicht allein" / "In diesem Kapitel" / "Lass uns gemeinsam"
-- Motivationszitate am Anfang oder Ende
-- Sätze wie "Jetzt wird es richtig interessant" / "Die brutale Wahrheit" / "Hier kommt der Clou" — das ist billiger Clickbait-Ton
-- Systematische Hook → Bullet-Liste → Box → nächstes Thema Struktur. Variiere die Struktur RADIKAL zwischen Abschnitten.
-- Generische Coaching-Phrasen
-- UNGEPRÜFTE ZAHLEN: Nenne KEINE konkreten Prozentsätze, Geldbeträge oder Statistiken, die du nicht mit Sicherheit weißt. Schreibe lieber "ein erheblicher Teil" als "42,7%". Bei Gesetzen/Regelungen schreibe "Stand der Regelung kann sich ändern — prüfe die aktuellen Bedingungen".
-- Jedes Kapitel gleich beenden
+VERBOTEN:
+- Erfundene Personen mit Namen/Beruf/Alter
+- "Jemand den ich beraten habe" / "Ein typisches Szenario" — das ist genauso generisch. Wenn du ein Beispiel brauchst, beschreibe eine KONKRETE Situation ohne Person: "Wer mit 30 anfängt, 50€ im Monat in einen MSCI World zu stecken..."
+- Motivationszitate
+- Clickbait-Sätze
+- Gleiche Kapitelstruktur wiederholen
+- Jede persönliche Marotte/Redewendung aus dem System-Prompt mehr als 1x im GANZEN Buch verwenden. Wenn du "Hand aufs Herz" einmal sagst, sag es nie wieder. Deine Persönlichkeit zeigt sich in der Denkweise, nicht in Catchphrases.
 
 Antworte NUR mit dem Markdown-Content dieses Kapitels.`;
   }
@@ -214,40 +211,28 @@ Description: ${chapter.description}
 
 ${styleInstr}
 
-VOICE AND TONE:
-- Write like a human who genuinely knows this topic and is telling a friend about it.
-- Have opinions. Say "I think that's nonsense" or "I'm not sure about this".
-- Do NOT write in a lecturing tone. No textbook voice. No coach voice.
-- Break your own rules occasionally. Real authors aren't perfectly consistent.
-- Vary sentence length. Short. Then long and winding. Mix it up.
+CONTENT QUALITY — the most important criterion:
+- Every chapter MUST contain at least one thought the reader does NOT already know. No rehashing common knowledge. Demand contrarian takes, edge cases, things Google doesn't show on page 1.
+- Use concrete numbers, products, providers where it makes sense. An expert would say "25€/month" not "a smaller amount". Add "(as of 2026, check current values)" where things change.
+- Challenge mainstream advice. Don't just agree with everything.
+
+VOICE:
+- Write like a human expert. Not lecturing, not coaching. Have opinions.
+- Vary sentence length and tempo.
 
 Requirements:
 - Approximately ${wordsPerChapter} words
 - Casual, direct — address the reader as "you"
-- Start with # ${chapter.title} as H1
-- Use ## for sections
-- NO transition to the next chapter at the end
-- The chapter MUST be complete. No abrupt cutoffs.
+- Start with # ${chapter.title} as H1, use ## for sections
+- NO transition to the next chapter. Chapter MUST be complete.
 
-FORMATTING — use sparingly:
-- **bold** and *italic* for emphasis
-- > Blockquotes ONLY for real quotes from real people (with name). NO invented quotes.
-- Lists only for actual enumerations, not as a text-structure crutch
-- Tables ONLY when comparing data
-- Tip boxes (max 1 per chapter, not in every one!) as definition list:
-  Tip
-  : Concrete, practical tip.
-- Horizontal rules (---) — max 1 per chapter
+FORMATTING — sparingly:
+- Lists only for real enumerations. Tip boxes max 1/chapter. Horizontal rules max 1/chapter.
 
-FORBIDDEN — these instantly expose the book as AI-generated:
-- INVENTED CASE STUDIES with names: NO "The Miller family", NO "Sarah, 43, accountant". If you need an example, write "someone I've worked with" or "a typical scenario" — NEVER made-up people with job, age, family status.
-- "Imagine..." / "You are not alone" / "In this chapter" / "Let's explore"
-- Motivational quotes at the start or end
-- Sentences like "Here's where it gets interesting" / "The brutal truth" / "Here's the kicker" — cheap clickbait tone
-- Systematic Hook → Bullet list → Box → next topic structure. RADICALLY vary structure between sections.
-- Generic coaching phrases
-- UNVERIFIED NUMBERS: Don't cite specific percentages, amounts, or statistics you're not certain about. Write "a significant portion" rather than "42.7%". For laws/regulations write "rules may have changed — check current conditions".
-- Ending every chapter the same way
+FORBIDDEN:
+- Invented people with name/job/age. Instead describe CONCRETE situations without characters.
+- Motivational quotes. Clickbait sentences. Same structure every chapter.
+- Every catchphrase/quirk from the system prompt max 1x in the WHOLE book. Personality shows in thinking, not in repeated phrases.
 
 Respond ONLY with the Markdown content of this chapter.`;
 }
