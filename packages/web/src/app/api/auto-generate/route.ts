@@ -363,6 +363,7 @@ export async function POST(request: NextRequest) {
       subtitle: "",
       topic,
       authors: [authorName],
+      authorBio: authorBio || undefined,
       lang,
       chapters: [],
       wordCount: 0,

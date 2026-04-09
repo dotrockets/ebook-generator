@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
       title: entry.title,
       subtitle: entry.subtitle || undefined,
       authors: entry.authors,
+      authorBio: entry.authorBio || undefined,
       lang: entry.lang,
       template: template || entry.template || "dark-ocean",
       paper: "a4",

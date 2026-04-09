@@ -12,6 +12,7 @@ export interface EbookEntry {
   subtitle: string;
   topic: string;
   authors: string[];
+  authorBio?: string;
   lang: string;
   chapters: string[];
   wordCount: number;
