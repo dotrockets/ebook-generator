@@ -58,9 +58,7 @@
 )
 
 // === Widow/Orphan control ===
-// Prevent single lines at top/bottom of pages
-#set par(hanging-indent: 0pt)
-#show par: set block(breakable: true, widow: 2, orphan: 2)
+#show par: set block(breakable: true)
 
 // ============================================================
 // FRONT MATTER — no headers, Roman page numbers
