@@ -60,8 +60,7 @@ Antworte NUR mit diesem JSON-Format, nichts anderes:
       "title": "Kapiteltitel",
       "sections": ["Abschnitt 1", "Abschnitt 2", "Abschnitt 3"],
       "description": "Kurze Beschreibung was in diesem Kapitel behandelt wird",
-      "chapterStyle": "story|deep-dive|practical|confrontational|reflective",
-      "epigraph": "Passendes Zitat eines bekannten Autors/Denkers — Name"
+      "chapterStyle": "story|deep-dive|practical|confrontational|reflective"
     }
   ]
 }
@@ -96,8 +95,7 @@ Respond ONLY with this JSON format, nothing else:
       "title": "Chapter Title",
       "sections": ["Section 1", "Section 2", "Section 3"],
       "description": "Brief description of what this chapter covers",
-      "chapterStyle": "story|deep-dive|practical|confrontational|reflective",
-      "epigraph": "Fitting quote by a known author/thinker — Name"
+      "chapterStyle": "story|deep-dive|practical|confrontational|reflective"
     }
   ]
 }
@@ -159,7 +157,7 @@ function chapterPrompt(
     || STYLE_INSTRUCTIONS.practical[lang === "de" ? "de" : "en"];
 
   if (lang === "de") {
-    return `Du schreibst Kapitel ${chapterNum} von ${totalChapters} fuer das Ebook "${bookTitle}" zum Thema "${topic}".
+    return `Du schreibst Kapitel ${chapterNum} von ${totalChapters} für das Ebook "${bookTitle}" zum Thema "${topic}".
 ${context}
 
 Kapitel ${chapterNum}: "${chapter.title}"
@@ -168,6 +166,13 @@ Beschreibung: ${chapter.description}
 
 ${styleInstr}
 
+STIMME UND TON:
+- Schreibe wie ein Mensch, der sich wirklich mit dem Thema auskennt und einem Freund davon erzählt.
+- Hab eine Meinung. Sag auch mal "Das halte ich für Quatsch" oder "Hier bin ich unsicher".
+- Schreibe NICHT belehrend. Kein Lehrbuch-Ton. Kein Coach-Ton.
+- Brich deine eigenen Regeln gelegentlich. Echte Autoren sind nicht immer konsistent.
+- Schreibe mal einen kurzen Satz. Dann einen langen. Variiere das Tempo.
+
 Anforderungen:
 - Ca. ${wordsPerChapter} Wörter
 - Sprache: Deutsch, Du-Anrede
@@ -175,28 +180,27 @@ Anforderungen:
 - Verwende ## für Abschnitte
 - KEINE Überleitung zum nächsten Kapitel am Ende
 - WICHTIG: Verwende korrekte deutsche Umlaute (ä, ö, ü, ß) — NIEMALS ae, oe, ue als Ersatz
+- Das Kapitel MUSS vollständig sein. Kein abruptes Abbrechen.
 
-FORMATIERUNG — nutze diese Elemente gezielt (nicht alle in jedem Kapitel!):
+FORMATIERUNG — sparsam einsetzen:
 - **fett** und *kursiv* für Betonungen
-- > Blockquotes für prägnante Zitate oder Kernaussagen (1-2 pro Kapitel, kurz!)
-- Listen für Aufzählungen
-- Tabellen NUR wenn Daten verglichen werden (nicht erzwingen)
-- Tipp-Boxen als Definition-Liste, z.B.:
+- > Blockquotes NUR für echte Zitate von echten Menschen (mit Name). KEINE erfundenen Zitate.
+- Listen nur wenn es wirklich eine Aufzählung ist, nicht als Textstruktur-Krücke
+- Tabellen NUR wenn Daten verglichen werden
+- Tipp-Boxen (max 1 pro Kapitel, nicht in jedem!) als Definition-Liste:
   Tipp
-  : Hier steht ein konkreter, praktischer Tipp den der Leser sofort umsetzen kann.
-  Nutze das 1-2 Mal pro Kapitel für die wichtigsten Takeaways. Varianten: "Tipp", "Wichtig", "Achtung", "Auf einen Blick", "Praxis-Check"
+  : Konkreter, praktischer Tipp.
+- Horizontale Trennlinien (---) — maximal 1 pro Kapitel
 
-VERBOTEN (das macht das Buch generisch):
-- "Du bist nicht allein" oder Varianten davon
-- "Stell dir vor..." als Kapiteloeffner
-- "In diesem Kapitel lernst du..."
-- "Lass uns gemeinsam..." / "Lass uns einen Blick werfen..."
-- Saetze die mit "Es ist wichtig zu verstehen, dass..." anfangen
-- Generische Coaching-Phrasen wie "alte Muster loslassen", "in deine Kraft kommen", "dein volles Potenzial entfalten"
-- Unbelegte wissenschaftliche Behauptungen — wenn du eine Studie nennst, nenne Forscher + Jahr. Wenn du keine hast, formuliere ehrlich als Erfahrungswert.
-- Jedes Kapitel mit einer Checkliste oder Aktionsschritten beenden — VARIIERE das Ende: manchmal eine einzelne, prägnante Frage. Manchmal eine Anekdote. Manchmal konkrete Schritte. Manchmal ein Zitat.
-- Horizontale Trennlinien (---) — verwende MAXIMAL eine pro Kapitel, nur bei einem echten Themenwechsel. Nicht nach jedem Abschnitt!
-- Das Kapitel MUSS vollständig sein. Schreibe es bis zum Ende durch. Kein abruptes Abbrechen.
+VERBOTEN — diese Dinge entlarven das Buch sofort als KI-generiert:
+- ERFUNDENE FALLBEISPIELE mit Namen: KEINE "Familie Müller", KEINE "Petra, 43, Bankkauffrau". Wenn du ein Beispiel brauchst, schreibe "Jemand den ich beraten habe" oder "Ein typisches Szenario" — NIEMALS ausgedachte Personen mit Beruf, Alter, Familienstand.
+- "Stell dir vor..." / "Du bist nicht allein" / "In diesem Kapitel" / "Lass uns gemeinsam"
+- Motivationszitate am Anfang oder Ende
+- Sätze wie "Jetzt wird es richtig interessant" / "Die brutale Wahrheit" / "Hier kommt der Clou" — das ist billiger Clickbait-Ton
+- Systematische Hook → Bullet-Liste → Box → nächstes Thema Struktur. Variiere die Struktur RADIKAL zwischen Abschnitten.
+- Generische Coaching-Phrasen
+- UNGEPRÜFTE ZAHLEN: Nenne KEINE konkreten Prozentsätze, Geldbeträge oder Statistiken, die du nicht mit Sicherheit weißt. Schreibe lieber "ein erheblicher Teil" als "42,7%". Bei Gesetzen/Regelungen schreibe "Stand der Regelung kann sich ändern — prüfe die aktuellen Bedingungen".
+- Jedes Kapitel gleich beenden
 
 Antworte NUR mit dem Markdown-Content dieses Kapitels.`;
   }
@@ -210,34 +214,40 @@ Description: ${chapter.description}
 
 ${styleInstr}
 
+VOICE AND TONE:
+- Write like a human who genuinely knows this topic and is telling a friend about it.
+- Have opinions. Say "I think that's nonsense" or "I'm not sure about this".
+- Do NOT write in a lecturing tone. No textbook voice. No coach voice.
+- Break your own rules occasionally. Real authors aren't perfectly consistent.
+- Vary sentence length. Short. Then long and winding. Mix it up.
+
 Requirements:
 - Approximately ${wordsPerChapter} words
-- Casual, direct style — address the reader as "you"
+- Casual, direct — address the reader as "you"
 - Start with # ${chapter.title} as H1
 - Use ## for sections
 - NO transition to the next chapter at the end
+- The chapter MUST be complete. No abrupt cutoffs.
 
-FORMATTING — use these elements strategically (not all in every chapter!):
+FORMATTING — use sparingly:
 - **bold** and *italic* for emphasis
-- > Blockquotes for punchy quotes or key insights (1-2 per chapter, keep short!)
-- Lists for enumerations
-- Tables ONLY when comparing data (don't force them)
-- Tip boxes as definition lists, e.g.:
-  Key Takeaway
-  : A concrete, actionable insight the reader can use immediately.
-  Use 1-2 per chapter for the most important points. Variants: "Tip", "Important", "Warning", "At a Glance", "Quick Check"
+- > Blockquotes ONLY for real quotes from real people (with name). NO invented quotes.
+- Lists only for actual enumerations, not as a text-structure crutch
+- Tables ONLY when comparing data
+- Tip boxes (max 1 per chapter, not in every one!) as definition list:
+  Tip
+  : Concrete, practical tip.
+- Horizontal rules (---) — max 1 per chapter
 
-FORBIDDEN (these make the book feel generic/AI):
-- "You are not alone" or variants
-- "Imagine..." as a chapter opener
-- "In this chapter you will learn..."
-- "Let's take a look at..." / "Let's explore..."
-- Sentences starting with "It's important to understand that..."
-- Generic coaching phrases like "unlock your potential", "step into your power", "embrace your journey"
-- Unsubstantiated scientific claims — if you cite a study, name researcher + year. If you have none, be honest and frame it as experiential.
-- Ending every chapter with a checklist or action steps — VARY the ending: sometimes a single sharp question. Sometimes an anecdote. Sometimes concrete steps. Sometimes a quote.
-- Horizontal rules (---) — use AT MOST one per chapter, only for a real topic shift. Not after every section!
-- The chapter MUST be complete. Write it through to the end. No abrupt cutoffs.
+FORBIDDEN — these instantly expose the book as AI-generated:
+- INVENTED CASE STUDIES with names: NO "The Miller family", NO "Sarah, 43, accountant". If you need an example, write "someone I've worked with" or "a typical scenario" — NEVER made-up people with job, age, family status.
+- "Imagine..." / "You are not alone" / "In this chapter" / "Let's explore"
+- Motivational quotes at the start or end
+- Sentences like "Here's where it gets interesting" / "The brutal truth" / "Here's the kicker" — cheap clickbait tone
+- Systematic Hook → Bullet list → Box → next topic structure. RADICALLY vary structure between sections.
+- Generic coaching phrases
+- UNVERIFIED NUMBERS: Don't cite specific percentages, amounts, or statistics you're not certain about. Write "a significant portion" rather than "42.7%". For laws/regulations write "rules may have changed — check current conditions".
+- Ending every chapter the same way
 
 Respond ONLY with the Markdown content of this chapter.`;
 }
@@ -513,15 +523,6 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Insert epigraph after H1 heading if present
-        if (chapter.epigraph) {
-          const h1Match = chapterText.match(/^(#\s+.+\n)/);
-          if (h1Match) {
-            const epigraph = `\n> *${chapter.epigraph}*\n`;
-            chapterText = chapterText.replace(h1Match[0], h1Match[0] + epigraph);
-          }
-        }
-
         // Strip excessive horizontal rules (max 2 per chapter)
         const parts = chapterText.split(/\n---\n/);
         if (parts.length > 3) {
@@ -556,31 +557,38 @@ lang: ${lang}
       console.log(`[auto-generate] starting lektorat pass (${chapterTexts.length} chapters)...`);
 
       const lektoratPrompt = (chapterMd: string, chapterIdx: number) => lang === "de"
-        ? `Du bist ein erfahrener deutscher Lektor. Korrigiere dieses Kapitel (${chapterIdx + 1}/${chapterTexts.length}) aus dem Ebook "${outline.title}".
+        ? `Du bist Lektor. Dein Job: dieses Kapitel (${chapterIdx + 1}/${chapterTexts.length}) so überarbeiten, dass es NICHT nach KI klingt.
 
 KAPITEL:
 ${chapterMd}
 
 KORRIGIERE:
-1. Du-Anrede konsequent. KEIN "Sie/Ihnen/Ihre" im Fließtext (Ausnahme: direkte Zitate).
-2. Abgebrochene Sätze sinnvoll beenden.
-3. Umlaute: ae→ä, oe→ö, ue→ü wo nötig.
-4. AI-Floskeln ersetzen: "Du bist nicht allein", "Stell dir vor...", "In diesem Kapitel", "Lass uns gemeinsam".
-5. Unbelegte Studien: Wenn Forscher/Jahr unplausibel klingt, als allgemeine Erkenntnis umformulieren.
-6. Überflüssige --- entfernen (max 1 pro Kapitel).
-7. Markdown-Struktur sicherstellen (# ## > Listen etc.).
+1. ERFUNDENE PERSONEN entfernen: "Familie Müller", "Petra, 43, Bankkauffrau" etc. → Ersetze durch anonyme Formulierungen ("jemand in meiner Beratung", "ein typisches Beispiel", "eine Bekannte").
+2. CLICKBAIT-SÄTZE streichen: "Jetzt wird es richtig interessant", "Die brutale Wahrheit", "Hier kommt der Clou" → natürlicher formulieren oder streichen.
+3. MOTIVATIONSZITATE am Kapitelanfang/-ende entfernen (Saint-Exupéry etc.).
+4. KONKRETE ZAHLEN prüfen: Wenn Prozentsätze, Geldbeträge oder Statistiken genannt werden die erfunden sein könnten, ersetze durch vage aber ehrliche Formulierungen ("ein erheblicher Teil", "mehrere tausend Euro"). Bei Gesetzen/Regelungen ergänze "(Stand kann sich ändern)".
+5. GLEICHFÖRMIGE STRUKTUR aufbrechen: Wenn jeder Abschnitt Hook → Liste → Box → nächstes Thema folgt, variiere das. Manche Abschnitte nur Fließtext. Manche nur eine Liste ohne Einleitung.
+6. Du-Anrede konsequent. Kein "Sie/Ihnen/Ihre" im Fließtext.
+7. Abgebrochene Sätze beenden.
+8. Umlaute: ae→ä, oe→ö, ue→ü.
+9. Überflüssige --- entfernen.
 
 REGELN:
 - Gib das KOMPLETTE korrigierte Kapitel zurück.
 - Ändere KEINE Überschriften.
-- Kürze nicht radikal.
 - Antworte NUR mit dem korrigierten Kapitel.`
-        : `You are an experienced editor. Correct this chapter (${chapterIdx + 1}/${chapterTexts.length}) from "${outline.title}".
+        : `You are an editor. Your job: make this chapter (${chapterIdx + 1}/${chapterTexts.length}) NOT sound like AI.
 
 CHAPTER:
 ${chapterMd}
 
-FIX: consistent "you", truncated sentences, AI clichés, dubious citations, excess ---, markdown structure.
+FIX:
+1. Remove INVENTED PEOPLE: "The Miller family", "Sarah, 43, accountant" → anonymous ("someone I worked with", "a typical case").
+2. Remove CLICKBAIT: "Here's where it gets interesting", "The brutal truth" → natural phrasing.
+3. Remove motivational quotes at chapter start/end.
+4. UNVERIFIED NUMBERS: Replace specific percentages/amounts with honest vague language ("a significant portion"). Add "(rules may have changed)" for laws.
+5. Break UNIFORM STRUCTURE: If every section follows Hook → List → Box → next topic, vary it radically.
+6. Consistent "you", fix truncated sentences, fix umlauts, remove excess ---.
 Return the COMPLETE corrected chapter only.`;
 
       const editedChapters: string[] = [];
